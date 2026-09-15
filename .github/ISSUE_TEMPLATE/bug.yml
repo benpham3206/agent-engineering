@@ -1,0 +1,36 @@
+name: Bug report
+description: Report a reproducible defect or regression
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Observed behavior
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Provide the smallest reliable reproduction and relevant inputs.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Logs, traces, eval results, screenshots, or failing tests.
+  - type: input
+    id: commit
+    attributes:
+      label: Commit/version
+      placeholder: git SHA or release version

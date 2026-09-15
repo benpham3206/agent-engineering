@@ -1,0 +1,31 @@
+name: Experiment
+description: Propose a bounded experiment to resolve an engineering uncertainty
+title: "experiment: "
+labels: ["experiment"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What specific uncertainty should this experiment resolve?
+    validations:
+      required: true
+  - type: textarea
+    id: hypothesis
+    attributes:
+      label: Hypothesis
+      description: What result do you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: criterion
+    attributes:
+      label: Success criterion
+      description: What measurable result would justify adoption?
+    validations:
+      required: true
+  - type: textarea
+    id: boundary
+    attributes:
+      label: Isolation boundary
+      description: How will the experiment stay separate from production code until a decision is made?

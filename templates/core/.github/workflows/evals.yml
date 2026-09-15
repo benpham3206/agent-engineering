@@ -1,0 +1,23 @@
+name: Evals
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 9 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  full-evals:
+    name: full-evals
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify repository contract
+        run: bash scripts/verify-repo.sh
+
+      - name: Run full project evaluations
+        run: bash scripts/run-hook.sh eval full

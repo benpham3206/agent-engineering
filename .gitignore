@@ -1,0 +1,33 @@
+# Local generation manifests/outputs
+/project.conf
+/dist/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Generic caches
+.cache/
+tmp/
+temp/
+coverage/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+target/
+.gradle/
+
+# Local worktrees
+.worktrees/

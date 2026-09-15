@@ -1,0 +1,31 @@
+name: Capability request
+description: Propose a new externally observable capability
+title: "capability: "
+labels: ["capability"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What should the system be able to accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: value
+    attributes:
+      label: Why it matters
+      description: What objective or bottleneck does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: criteria
+    attributes:
+      label: Acceptance criteria
+      description: How can success be observed or measured?
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies
+      description: Which existing capabilities or interfaces does this depend on?

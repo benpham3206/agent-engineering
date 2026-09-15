@@ -1,0 +1,29 @@
+name: Template CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: template-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify template system
+        shell: bash
+        run: |
+          bash tests/generation/test-generate.sh
+          bash -n tooling/lib.sh tooling/validate-config.sh tooling/generate.sh tests/generation/test-generate.sh
+          git diff --check

@@ -1,0 +1,44 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release-verification:
+    name: release-verification
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify repository contract
+        run: bash scripts/verify-repo.sh
+
+      - name: Project checks
+        run: bash scripts/run-hook.sh check
+
+      - name: Project tests
+        run: bash scripts/run-hook.sh test
+
+      - name: Full evaluations
+        run: bash scripts/run-hook.sh eval full
+
+      - name: Build project
+        run: bash scripts/run-hook.sh build
+
+      - name: Create source archive
+        run: git archive --format=tar.gz --prefix=source/ -o source.tar.gz HEAD
+
+      - name: Upload source archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-${{ github.ref_name }}
+          path: source.tar.gz
+          if-no-files-found: error

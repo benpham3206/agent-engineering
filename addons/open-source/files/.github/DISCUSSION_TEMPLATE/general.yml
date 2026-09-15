@@ -1,0 +1,13 @@
+title: "[Discussion] "
+labels: []
+body:
+  - type: markdown
+    attributes:
+      value: "Use discussions for design questions, usage help, and proposals that are not yet actionable issues."
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What are you trying to understand, propose, or decide?
+    validations:
+      required: true

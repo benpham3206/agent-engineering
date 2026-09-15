@@ -1,0 +1,17 @@
+name: Security hardening
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  repository-security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Repository security contract
+        run: bash scripts/security-check.sh

@@ -1,0 +1,19 @@
+name: Benchmarks
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 6 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify repository
+        run: bash scripts/verify-repo.sh
+      - name: Run full evaluation/benchmark hook
+        run: bash scripts/run-hook.sh eval full

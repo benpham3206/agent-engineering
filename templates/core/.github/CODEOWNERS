@@ -1,0 +1,4 @@
+# Add project-specific ownership rules after the repository has real maintainers.
+# Example:
+# /path/to/component/ @your-github-handle
+# /docs/decisions/ @your-github-handle

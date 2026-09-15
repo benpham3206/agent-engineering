@@ -1,0 +1,42 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Deployment environment
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: deploy-${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify repository contract
+        run: bash scripts/verify-repo.sh
+
+      - name: Project checks
+        run: bash scripts/run-hook.sh check
+
+      - name: Project tests
+        run: bash scripts/run-hook.sh test
+
+      - name: Smoke evaluations
+        run: bash scripts/run-hook.sh eval smoke
+
+      - name: Build project
+        run: bash scripts/run-hook.sh build
+
+      - name: Deploy
+        run: bash scripts/run-hook.sh --required deploy "${{ inputs.environment }}"
