@@ -63,6 +63,15 @@ require_validate_rejected() {
   fi
 }
 
+require_tracked_executable() {
+  local relpath="$1"
+  local stage mode
+  stage="$(git -C "$root" ls-files --stage -- "$relpath")"
+  [[ -n "$stage" ]] || fail_contract "missing tracked file: $relpath"
+  mode="${stage%% *}"
+  [[ "$mode" == "100755" ]] || fail_contract "template script is not executable in git: $relpath (mode $mode)"
+}
+
 run_generate() {
   bash "$generator" "$1" >/dev/null
 }
@@ -192,6 +201,10 @@ fi
 
 require_not_contains "$root/tooling/lib.sh" "chmod --reference"
 require_not_contains "$root/tooling/generate.sh" 'ADDON_LIST[@]'
+
+while IFS= read -r relpath; do
+  require_tracked_executable "$relpath"
+done < <(git -C "$root" ls-files -- '*.sh')
 
 mode_dir="$tmp/mode-preservation"
 mkdir -p "$mode_dir"

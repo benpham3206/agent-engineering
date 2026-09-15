@@ -50,7 +50,7 @@ EOF_MANIFEST
 if [[ -x "$output/scripts/verify-repo.sh" ]]; then
   bash "$output/scripts/verify-repo.sh"
 else
-  fail 'generated repository is missing scripts/verify-repo.sh'
+  fail 'generated repository is missing an executable scripts/verify-repo.sh'
   exit 1
 fi
 
