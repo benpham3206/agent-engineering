@@ -132,6 +132,23 @@ if [[ -x "$core_out/scripts/verify-repo.sh" ]]; then
     fail_contract "generated repository verifier allowed a permanent core invariant to disappear"
   fi
   cp "$tmp/core-agents.md" "$minimal_out/AGENTS.md"
+
+  mkdir -p "$core_out/node_modules/pkg"
+  printf '{{PROJECT_NAME}}\n' > "$core_out/node_modules/pkg/index.js"
+  bash "$core_out/scripts/verify-repo.sh" >/dev/null || fail_contract "repository verifier scanned dependency files outside git"
+  rm -rf "$core_out/node_modules"
+
+  HOME="$tmp" git -c init.defaultBranch=main -C "$core_out" init -q
+  printf 'node_modules/\n' > "$core_out/.gitignore"
+  mkdir -p "$core_out/node_modules/pkg"
+  printf '{{PROJECT_NAME}}\n' > "$core_out/node_modules/pkg/index.js"
+  bash "$core_out/scripts/verify-repo.sh" >/dev/null || fail_contract "repository verifier scanned ignored files inside git"
+  rm -rf "$core_out/node_modules"
+  printf '{{PROJECT_NAME}}\n' > "$core_out/notes.md"
+  if bash "$core_out/scripts/verify-repo.sh" >/dev/null 2>&1; then
+    fail_contract "repository verifier missed an untracked token inside git"
+  fi
+  rm -f "$core_out/notes.md"
 else
   fail_contract "generated core repository has no verifier"
 fi
