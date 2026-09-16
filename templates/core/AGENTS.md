@@ -62,6 +62,8 @@ Timeless means clear, durable work that remains understandable without depending
 
 For user-facing work, visual hierarchy, interaction states, accessibility, and consistency are part of correctness. Defend against accidental complexity and hostile behavior without adding controls beyond the actual risk.
 
+Keep modules cohesive. Split on reasons to change, not on size alone; a long cohesive file beats scattered fragments that share state. Treat size and complexity thresholds enforced through `scripts/project/check` as tripwires for review, not as targets.
+
 ## Operating loop
 
 Do not prepare the whole project before the current constraint requires it.

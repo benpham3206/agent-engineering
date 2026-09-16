@@ -320,6 +320,8 @@ require_contains "$root/templates/core/AGENTS.md" "## Feature path"
 require_contains "$root/templates/core/AGENTS.md" "Treat working product behavior as the initial bottleneck"
 require_contains "$root/templates/core/AGENTS.md" "A feature request authorizes pursuit of that bounded product outcome."
 require_contains "$root/templates/core/AGENTS.md" "Do not ask for approval again"
+require_contains "$root/standards/engineering.md" "Split modules on reasons to change, not on size."
+require_contains "$root/templates/core/AGENTS.md" "Split on reasons to change, not on size alone"
 finish_contract "inherited engineering doctrine"
 
 # 3. Open-source composition proves public-facing add-ons compose without organization policy.
