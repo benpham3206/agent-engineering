@@ -44,6 +44,19 @@ Every line, file, dependency, abstraction, and service must earn its existence. 
 
 Security, trust-boundary validation, accessibility, data-loss protection, and correctness are not optional simplifications.
 
+## Modularity
+
+Split modules on reasons to change, not on size. A file, class, or function earns a split when it holds more than one responsibility or forces a reader to track unrelated concerns together. A long cohesive file is better than scattered fragments that share state.
+
+Use metrics as tripwires for review, not as targets:
+
+- branching complexity per function (cyclomatic or cognitive) above a project-set threshold requires simplification or a stated reason;
+- file length above a project-set threshold requires a stated reason to remain whole;
+- dependencies flow one direction; import cycles between modules are defects;
+- in object-oriented code, inheritance deeper than two levels requires justification.
+
+Set thresholds with the project's own tools through `scripts/project/check`. The standard does not pick a number; it requires that a number exists and is enforced.
+
 ## Outcome over activity
 
 Judge work by externally verified outcomes under fixed constraints, not by activity. Agents may not redefine success, expand their own authority, or certify their own work.
