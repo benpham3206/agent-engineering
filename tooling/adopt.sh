@@ -48,11 +48,19 @@ backbone_paths() {
 }
 
 while IFS= read -r path; do
+  if [[ "$path" == AGENTS.md ]]; then
+    continue
+  fi
   if [[ -e "$target/$path" || -L "$target/$path" ]]; then
     fail "ADOPT conflict: $path already exists"
     exit 1
   fi
 done < <(backbone_paths)
+
+if [[ -L "$target/AGENTS.md" || ( -e "$target/AGENTS.md" && ! -f "$target/AGENTS.md" ) ]]; then
+  fail 'ADOPT conflict: AGENTS.md must be a regular file when present'
+  exit 1
+fi
 
 if [[ -e "$target/.engineering-manifest" || -L "$target/.engineering-manifest" ]]; then
   fail 'ADOPT conflict: .engineering-manifest already exists'
@@ -69,8 +77,23 @@ if [[ ! -e "$target/README.md" && ! -L "$target/README.md" ]]; then
     "$project_name" > "$stage/README.md"
 fi
 
+if [[ ! -e "$target/Makefile" && ! -L "$target/Makefile" ]]; then
+  cp -p "$root/templates/core/Makefile" "$stage/Makefile"
+fi
+
 replace_tokens "$stage" "$project_name" "$(date +%Y)"
 write_engineering_manifest "$stage" "$project_name" ''
+
+if [[ -f "$target/AGENTS.md" ]]; then
+  {
+    printf '\n## Project rules\n\n'
+    printf "Rules carried over from the project's existing AGENTS.md. Where they are more specific than the sections above, they take precedence.\n\n"
+    cat "$target/AGENTS.md"
+    if [[ -n "$(tail -c 1 "$target/AGENTS.md")" ]]; then
+      printf '\n'
+    fi
+  } >> "$stage/AGENTS.md"
+fi
 
 while IFS= read -r path; do
   mkdir -p "$target/$(dirname "$path")"
@@ -79,6 +102,9 @@ done < <(backbone_paths)
 
 if [[ -f "$stage/README.md" ]]; then
   cp -p "$stage/README.md" "$target/README.md"
+fi
+if [[ -f "$stage/Makefile" ]]; then
+  cp -p "$stage/Makefile" "$target/Makefile"
 fi
 cp -p "$stage/.engineering-manifest" "$target/.engineering-manifest"
 

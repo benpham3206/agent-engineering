@@ -225,6 +225,7 @@ else
   require_contains "$adopt_out/app/main.txt" "existing app"
   require_file "$adopt_out/AGENTS.md"
   require_file "$adopt_out/GOAL.md"
+  require_file "$adopt_out/Makefile"
   require_file "$adopt_out/.engineering-manifest"
   require_contains "$adopt_out/.engineering-manifest" "PROJECT_NAME=existing-app"
   if [[ -x "$adopt_out/scripts/verify-repo.sh" ]]; then
@@ -394,15 +395,34 @@ require_contains "$nonempty_out/existing.txt" "keep me"
 
 adopt_conflict="$tmp/adopt-conflict"
 mkdir -p "$adopt_conflict"
-printf 'existing agent rules\n' > "$adopt_conflict/AGENTS.md"
+printf 'existing goal\n' > "$adopt_conflict/GOAL.md"
 printf 'keep me\n' > "$adopt_conflict/application.txt"
 if bash "$root/tooling/adopt.sh" "conflict-app" "$adopt_conflict" >/dev/null 2>&1; then
   fail_contract "ADOPT overwrote or accepted a conflicting operating file"
 fi
-require_contains "$adopt_conflict/AGENTS.md" "existing agent rules"
+require_contains "$adopt_conflict/GOAL.md" "existing goal"
 require_contains "$adopt_conflict/application.txt" "keep me"
 require_absent "$adopt_conflict/.engineering-manifest"
-require_absent "$adopt_conflict/GOAL.md"
+require_absent "$adopt_conflict/AGENTS.md"
+
+adopt_merge="$tmp/adopt-merge"
+mkdir -p "$adopt_merge"
+printf 'existing agent rules\n' > "$adopt_merge/AGENTS.md"
+printf 'existing: ;\n' > "$adopt_merge/Makefile"
+if ! bash "$root/tooling/adopt.sh" "merge-app" "$adopt_merge" >/dev/null; then
+  fail_contract "ADOPT failed to merge an existing AGENTS.md"
+else
+  require_contains "$adopt_merge/AGENTS.md" "# Agent operating rules"
+  require_contains "$adopt_merge/AGENTS.md" "## Project rules"
+  require_contains "$adopt_merge/AGENTS.md" "existing agent rules"
+  require_contains "$adopt_merge/Makefile" "existing"
+  require_file "$adopt_merge/.engineering-manifest"
+  if [[ -x "$adopt_merge/scripts/verify-repo.sh" ]]; then
+    bash "$adopt_merge/scripts/verify-repo.sh" >/dev/null || fail_contract "merged adopt failed repository verification"
+  else
+    fail_contract "merged ADOPT did not install repository verification"
+  fi
+fi
 
 adopt_symlink="$tmp/adopt-symlink"
 adopt_symlink_escape="$tmp/adopt-symlink-escape"
@@ -416,6 +436,18 @@ if ln -s "$adopt_symlink_escape" "$adopt_symlink/scripts" 2>/dev/null && [[ -L "
   require_absent "$adopt_symlink/GOAL.md"
 else
   rm -f "$adopt_symlink/scripts"
+fi
+
+adopt_agents_link="$tmp/adopt-agents-symlink"
+mkdir -p "$adopt_agents_link"
+printf 'linked rules\n' > "$tmp/agents-link-target.md"
+if ln -s "$tmp/agents-link-target.md" "$adopt_agents_link/AGENTS.md" 2>/dev/null && [[ -L "$adopt_agents_link/AGENTS.md" ]]; then
+  if bash "$root/tooling/adopt.sh" "agents-symlink-app" "$adopt_agents_link" >/dev/null 2>&1; then
+    fail_contract "ADOPT accepted a symlinked AGENTS.md"
+  fi
+  require_absent "$adopt_agents_link/.engineering-manifest"
+else
+  rm -f "$adopt_agents_link/AGENTS.md"
 fi
 
 new_nonempty="$tmp/new-nonempty"

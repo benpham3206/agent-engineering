@@ -57,7 +57,7 @@ Record only the evidence that matters for the current goal and risk. Delete irre
 
 | Acceptance criterion or risk | Evidence | Result |
 | --- | --- | --- |
-| Repository structure is valid | `make verify` | Not run |
+| Repository structure is valid | `scripts/verify-repo.sh` | Not run |
 | Current capability criterion | Project-defined | Not recorded |
 
 ## Known regressions
