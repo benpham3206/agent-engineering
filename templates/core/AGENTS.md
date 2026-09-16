@@ -179,7 +179,7 @@ Use plain words, sentence-case headings, active voice, and one idea per sentence
 
 ## Commands
 
-The stable entry points are `scripts/verify-repo.sh` (repository contract) and `scripts/run-hook.sh <check|test|eval|build>`. When the project keeps the `Makefile`, `make verify`, `make check`, `make test`, and `make eval` are thin wrappers over them.
+The stable entry points are `scripts/verify-repo.sh` (repository contract) and `scripts/run-hook.sh <check|test|eval|build|deploy>`. When the project keeps the `Makefile`, `make verify`, `make check`, `make test`, and `make eval` are thin wrappers over them.
 
 `scripts/verify-repo.sh` checks the repository contract. The other hooks are project-specific and may be unconfigured. Run the checks that provide relevant evidence. Do not claim verification that did not run.
 

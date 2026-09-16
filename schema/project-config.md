@@ -11,6 +11,7 @@ The generator intentionally uses a small `KEY=value` manifest so it can validate
 | `OUTPUT_DIR` | no | POSIX absolute path or path relative to the template repository |
 
 Supported add-ons: `open-source`, `organization`, `deployment`, `releases`, `observability`, `benchmarks`, `performance`, `security-hardening`.
+Add-on files may not shadow backbone files (listed in `templates/core/scripts/backbone.list`), `.engineering-manifest`, or files provided by an earlier add-on in the same manifest.
 
 Unknown keys and duplicate keys are errors. The file is parsed as data; it is never sourced or evaluated by a shell.
 

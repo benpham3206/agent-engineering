@@ -4,13 +4,14 @@ set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
-required_files=(
-  README.md GOAL.md STATUS.md ARCHITECTURE.md AGENTS.md SECURITY.md
-  WORKER_TASK.md ARCHITECT_TASK.md REVIEWER_TASK.md
-  SECURITY_REVIEWER_TASK.md RESEARCH_TASK.md
-  .engineering-manifest
-  scripts/verify-repo.sh scripts/security-check.sh scripts/run-hook.sh
-)
+required_files=(README.md .engineering-manifest scripts/backbone.list)
+
+if [[ -f scripts/backbone.list ]]; then
+  while IFS= read -r path || [[ -n "$path" ]]; do
+    [[ -z "$path" || "${path:0:1}" == '#' ]] && continue
+    required_files+=("$path")
+  done < scripts/backbone.list
+fi
 
 failed=0
 open_braces='{'
@@ -46,7 +47,7 @@ while IFS= read -r -d '' path; do
 done < <(project_files)
 
 if [[ -f scripts/security-check.sh ]]; then
-  if ! bash scripts/security-check.sh >/dev/null; then
+  if ! bash scripts/security-check.sh; then
     failed=1
   fi
 fi

@@ -171,6 +171,25 @@ copy_overlay() {
   cp -a "$source"/. "$destination"/
 }
 
+assert_overlay_safe() {
+  local overlay_root="$1" backbone_list="$2" seen_file="$3"
+  [[ -d "$overlay_root" ]] || fail "overlay source missing: $overlay_root" || return 1
+  [[ -f "$backbone_list" ]] || fail "backbone list missing: $backbone_list" || return 1
+
+  local file rel
+  while IFS= read -r -d '' file; do
+    rel="${file#"$overlay_root"/}"
+    if [[ "$rel" == .engineering-manifest ]] \
+      || grep -Fqx -- "$rel" <(grep -v -e '^#' -e '^[[:space:]]*$' "$backbone_list"); then
+      fail "add-on cannot replace backbone file: $rel" || return 1
+    fi
+    if grep -Fqx -- "$rel" "$seen_file" 2>/dev/null; then
+      fail "add-ons collide on path: $rel" || return 1
+    fi
+    printf '%s\n' "$rel" >> "$seen_file"
+  done < <(find "$overlay_root" \( -type f -o -type l \) -print0)
+}
+
 replace_tokens() {
   local destination="$1" project_name="$2" year="$3"
   local file tmp

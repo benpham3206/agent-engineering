@@ -22,5 +22,5 @@ jobs:
         run: bash scripts/security-check.sh
 
       - name: Dependency review
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && !github.event.repository.private
         uses: actions/dependency-review-action@v4

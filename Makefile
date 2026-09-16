@@ -11,9 +11,8 @@ generate:
 test:
 	bash tests/generation/test-generate.sh
 
-verify: test
-	bash -n tooling/lib.sh tooling/validate-config.sh tooling/generate.sh tooling/new.sh tooling/adopt.sh tests/generation/test-generate.sh
-	git diff --check
+verify:
+	bash tooling/verify-self.sh
 
 clean-dist:
 	rm -rf dist

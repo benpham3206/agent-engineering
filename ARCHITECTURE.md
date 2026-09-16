@@ -67,7 +67,7 @@ Owns template-maintainer doctrine. Generated repos receive the essential rules i
 
 ### `tooling/`
 
-Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one.
+Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one. The backbone set is enumerated in `templates/core/scripts/backbone.list` and consumed by both `adopt.sh` and the generated `verify-repo.sh`.
 
 ## Design rules
 
@@ -76,7 +76,7 @@ Owns validation, composition, NEW, and ADOPT. Manifest content is treated as unt
 - Verification protects durable invariants, not the original starter tree.
 - Generated output looks like a normal project, not a template engine.
 - The secure/correctness floor is universal; heavy hardening is opt-in.
-- Verification scales with risk. Generated behavior is protected by six scenario contracts that cover distinct failure classes rather than many per-detail assertions.
+- Verification scales with risk. Generated behavior is protected by seven scenario contracts that cover distinct failure classes rather than many per-detail assertions.
 - Worker-agent scope is narrow; cross-cutting changes escalate to architecture-aware agents.
 - Project-independent lessons can move upstream into core or standards after they prove broadly useful.
 
