@@ -90,6 +90,14 @@ ADDONS=organization,deployment,observability,performance,security-hardening
 OUTPUT_DIR=dist/internal-agent
 ```
 
+## Included agent tools
+
+The repository also carries three opt-in upstream tools. They are repository assets and do not enter generated projects unless a maintainer integrates them explicitly.
+
+- [`skills/ponytail`](skills/ponytail/) contains the standalone Ponytail skill from [`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail), imported at `e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156` under the MIT license.
+- [`plugins/pstack`](plugins/pstack/) contains the complete pstack Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/pstack), imported at `c1c0a32802223f4be824112dd83d33ad29a8b26c` under the MIT license.
+- [`plugins/thermos`](plugins/thermos/) contains the complete Thermos Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/thermos), imported at the same revision under the MIT license.
+
 ## Engineering model
 
 The template encodes five restraints before automation:
@@ -116,6 +124,8 @@ The goal is not maximum process. Start with a secure minimum. Add infrastructure
 agent-engineering/
 ├── templates/core/          # canonical generated-project foundation
 ├── addons/                  # optional operating models and capabilities
+├── skills/                  # standalone upstream agent skills
+├── plugins/                 # complete upstream agent plugin packages
 ├── standards/               # engineering doctrine
 ├── tooling/                 # safe validation + generation
 ├── schema/                  # manifest contract
