@@ -25,12 +25,25 @@ for path in "${required_files[@]}"; do
   fi
 done
 
+project_files() {
+  if git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git -C "$root" ls-files -z --cached --others --exclude-standard
+  else
+    find . \( -name .git -o -name node_modules -o -name .venv -o -name venv -o -name vendor \
+      -o -name target -o -name dist -o -name build -o -name .next -o -name .turbo \
+      -o -name .cache -o -name __pycache__ \) -prune -o -type f -print0
+  fi
+}
+
 while IFS= read -r -d '' path; do
+  case "$path" in
+    .engineering-manifest|./.engineering-manifest) continue ;;
+  esac
   if grep -Fq -e "$project_token" -e "$year_token" "$path" 2>/dev/null; then
     printf 'unreplaced template token found: %s\n' "$path" >&2
     failed=1
   fi
-done < <(find . -type f ! -path './.git/*' ! -name '.engineering-manifest' -print0)
+done < <(project_files)
 
 if [[ -f scripts/security-check.sh ]]; then
   if ! bash scripts/security-check.sh >/dev/null; then
