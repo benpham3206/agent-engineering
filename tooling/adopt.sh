@@ -30,21 +30,16 @@ fi
 stage="$(mktemp -d)"
 trap 'rm -rf "$stage"' EXIT
 
+backbone_list="$root/templates/core/scripts/backbone.list"
+[[ -f "$backbone_list" ]] || fail 'backbone list missing'
+
 backbone_paths() {
-  printf '%s\n' \
-    GOAL.md \
-    STATUS.md \
-    ARCHITECTURE.md \
-    AGENTS.md \
-    SECURITY.md \
-    WORKER_TASK.md \
-    ARCHITECT_TASK.md \
-    REVIEWER_TASK.md \
-    SECURITY_REVIEWER_TASK.md \
-    RESEARCH_TASK.md \
-    scripts/verify-repo.sh \
-    scripts/security-check.sh \
-    scripts/run-hook.sh
+  local path
+  while IFS= read -r path || [[ -n "$path" ]]; do
+    path="${path%$'\r'}"
+    [[ -z "$path" || "${path:0:1}" == '#' ]] && continue
+    printf '%s\n' "$path"
+  done < "$backbone_list"
 }
 
 while IFS= read -r path; do

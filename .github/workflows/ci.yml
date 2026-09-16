@@ -23,7 +23,4 @@ jobs:
       - uses: actions/checkout@v4
       - name: Verify template system
         shell: bash
-        run: |
-          bash tests/generation/test-generate.sh
-          bash -n tooling/lib.sh tooling/validate-config.sh tooling/generate.sh tests/generation/test-generate.sh
-          git diff --check
+        run: bash tooling/verify-self.sh

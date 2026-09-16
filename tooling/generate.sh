@@ -19,9 +19,12 @@ mkdir -p "$output"
 
 copy_overlay "$root/templates/core" "$output"
 
+seen_files="$(mktemp)"
+trap 'rm -f "$seen_files"' EXIT
 
 if [[ -n "$NORMALIZED_ADDONS" ]]; then
   while IFS= read -r addon; do
+    assert_overlay_safe "$root/addons/$addon/files" "$root/templates/core/scripts/backbone.list" "$seen_files"
     copy_overlay "$root/addons/$addon/files" "$output"
   done < <(printf '%s\n' "$NORMALIZED_ADDONS" | tr ',' '\n')
 fi

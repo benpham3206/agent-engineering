@@ -109,6 +109,7 @@ require_contains "$core_out/.engineering-manifest" "ADDONS="
 require_absent "$core_out/LICENSE"
 require_absent "$core_out/OWNERS"
 require_absent "$core_out/addons"
+require_file "$core_out/scripts/backbone.list"
 if [[ -x "$core_out/scripts/verify-repo.sh" ]]; then
   bash "$core_out/scripts/verify-repo.sh" >/dev/null || fail_contract "generated core repository failed its own verifier"
 
@@ -149,6 +150,32 @@ if [[ -x "$core_out/scripts/verify-repo.sh" ]]; then
     fail_contract "repository verifier missed an untracked token inside git"
   fi
   rm -f "$core_out/notes.md"
+
+  run_hook="$core_out/scripts/run-hook.sh"
+  bash "$run_hook" >/dev/null 2>&1
+  status=$?
+  [[ "$status" -eq 64 ]] || fail_contract "run-hook accepted a missing hook name (exit $status)"
+  bash "$run_hook" bogus >/dev/null 2>&1
+  status=$?
+  [[ "$status" -eq 64 ]] || fail_contract "run-hook accepted an unknown hook name (exit $status)"
+  bash "$run_hook" check >/dev/null 2>&1
+  status=$?
+  [[ "$status" -eq 0 ]] || fail_contract "run-hook failed to skip an unconfigured hook (exit $status)"
+  bash "$run_hook" --required check >/dev/null 2>&1
+  status=$?
+  [[ "$status" -eq 78 ]] || fail_contract "run-hook skipped a missing required hook (exit $status)"
+
+  printf 'printf "should not run\\n"\n' > "$core_out/scripts/project/check"
+  bash "$run_hook" check >/dev/null 2>&1
+  status=$?
+  [[ "$status" -eq 126 ]] || fail_contract "run-hook executed a non-executable project hook (exit $status)"
+  printf '#!/usr/bin/env bash\nprintf "project hook ran\\n"\n' > "$core_out/scripts/project/check"
+  chmod +x "$core_out/scripts/project/check"
+  hook_stdout="$(bash "$run_hook" check 2>/dev/null)"
+  status=$?
+  [[ "$status" -eq 0 ]] || fail_contract "run-hook failed an executable project hook (exit $status)"
+  [[ "$hook_stdout" == *"project hook ran"* ]] || fail_contract "run-hook did not surface project hook output"
+  rm -f "$core_out/scripts/project/check"
 else
   fail_contract "generated core repository has no verifier"
 fi
@@ -244,6 +271,7 @@ else
   require_file "$adopt_out/GOAL.md"
   require_file "$adopt_out/Makefile"
   require_file "$adopt_out/.engineering-manifest"
+  require_file "$adopt_out/scripts/backbone.list"
   require_contains "$adopt_out/.engineering-manifest" "PROJECT_NAME=existing-app"
   if [[ -x "$adopt_out/scripts/verify-repo.sh" ]]; then
     bash "$adopt_out/scripts/verify-repo.sh" >/dev/null || fail_contract "adopted project failed repository verification"
@@ -401,7 +429,35 @@ write_config "$windows_drive_config" "windows-drive" "" "D:/Codex/windows-drive"
 require_validate_rejected "$windows_drive_config"
 finish_contract "manifest rejection"
 
-# 6. Destructive-input safety proves generation fails without overwriting data or executing config text.
+# 6. Overlay integrity proves add-ons cannot shadow backbone files or each other.
+backbone_list_file="$root/templates/core/scripts/backbone.list"
+overlay_seen="$tmp/overlay-seen"
+: > "$overlay_seen"
+
+shadow_overlay="$tmp/overlay-shadow"
+mkdir -p "$shadow_overlay"
+printf 'shadowed rules\n' > "$shadow_overlay/AGENTS.md"
+if bash -c 'source "$1"; assert_overlay_safe "$2" "$3" "$4"' \
+  _ "$root/tooling/lib.sh" "$shadow_overlay" "$backbone_list_file" "$overlay_seen" >/dev/null 2>&1; then
+  fail_contract "add-on overlay replaced a backbone file"
+fi
+
+overlay_one="$tmp/overlay-one"
+overlay_two="$tmp/overlay-two"
+mkdir -p "$overlay_one/extra" "$overlay_two/extra"
+printf 'one\n' > "$overlay_one/extra/notes.md"
+printf 'two\n' > "$overlay_two/extra/notes.md"
+if ! bash -c 'source "$1"; assert_overlay_safe "$2" "$3" "$4"' \
+  _ "$root/tooling/lib.sh" "$overlay_one" "$backbone_list_file" "$overlay_seen" >/dev/null 2>&1; then
+  fail_contract "a benign add-on file was rejected"
+fi
+if bash -c 'source "$1"; assert_overlay_safe "$2" "$3" "$4"' \
+  _ "$root/tooling/lib.sh" "$overlay_two" "$backbone_list_file" "$overlay_seen" >/dev/null 2>&1; then
+  fail_contract "two add-ons collided on a path"
+fi
+finish_contract "overlay integrity"
+
+# 7. Destructive-input safety proves generation fails without overwriting data or executing config text.
 nonempty_out="$tmp/nonempty-output"
 mkdir -p "$nonempty_out"
 printf 'keep me\n' > "$nonempty_out/existing.txt"
