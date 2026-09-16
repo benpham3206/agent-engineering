@@ -67,7 +67,7 @@ Owns template-maintainer doctrine. Generated repos receive the essential rules i
 
 ### `tooling/`
 
-Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project.
+Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one.
 
 ## Design rules
 
