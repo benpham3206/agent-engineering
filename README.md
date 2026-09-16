@@ -16,6 +16,30 @@ Generated projects get a compact set of goal, architecture, status, role, verifi
 
 Generated repositories do **not** contain this template system's `addons/`, `standards/`, or generator internals.
 
+## Start, adopt, or extend a project
+
+Agent Engineering has three fast paths:
+
+- **NEW** starts with the language, framework, and libraries already chosen by the user or architect. It runs that ecosystem's native starter in an empty target, then adds the Agent Engineering operating layer. Agent Engineering does not maintain a stack registry or choose a framework by default.
+- **ADOPT** adds the operating layer to an existing project without restructuring application code or replacing its README. Conflicting Agent Engineering control files fail before anything is copied.
+- **FEATURE** treats working product behavior as the initial bottleneck for the requested feature. Bounded work can proceed directly; research, architecture, security review, or renewed approval are used only when the feature exposes a material reason to escalate.
+
+NEW accepts the native starter as ordinary command arguments and runs it in the target directory. For example:
+
+```bash
+tooling/new.sh my-app ../my-app -- npm create vite@latest . -- --template react-ts
+```
+
+The starter must be configured to initialize the current directory (`.`). Agent Engineering executes the command exactly as supplied; it does not parse or `eval` a command string.
+
+To adopt an existing project:
+
+```bash
+tooling/adopt.sh my-app ../existing-app
+```
+
+The existing manifest-based generator remains available when you want the full language-neutral starter tree rather than an ecosystem-native application scaffold.
+
 ## Generate a project
 
 Copy the example manifest:

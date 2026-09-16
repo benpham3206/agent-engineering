@@ -78,6 +78,18 @@ Do not prepare the whole project before the current constraint requires it.
 
 Research before architecture only when an unknown blocks a decision. Architecture before implementation only when a boundary or system choice requires it. Do not fill documents, add process, or design future stages merely to appear complete.
 
+## Feature path
+
+Treat working product behavior as the initial bottleneck for a requested feature unless evidence identifies a smaller prerequisite that blocks it. A feature request authorizes pursuit of that bounded product outcome. Do not ask for approval again unless implementation requires a materially different product decision, cross-cutting architecture change, authority increase, significant new dependency or cost, or difficult-to-reverse choice.
+
+Use the narrowest path that can produce evidence:
+
+1. Read `GOAL.md`, `ROADMAP.md` when present, `ARCHITECTURE.md`, and `STATUS.md`.
+2. Preserve explicit user choices of language, framework, libraries, and platform. Derive unspecified choices from current constraints.
+3. Send bounded implementation directly to a worker. Use research, architecture, or security review only when the feature exposes a real unknown, cross-cutting decision, or trust boundary.
+4. Prove the requested behavior with the simplest reliable evidence.
+5. Update `STATUS.md` when the bottleneck, working capability, risk, or next step changed materially.
+
 ## Project selection order
 
 Before choosing technology or process, use this order:

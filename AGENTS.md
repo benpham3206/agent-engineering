@@ -38,7 +38,7 @@ Answers a decision question with traceable evidence, uncertainty, and a proposed
 1. `templates/core/` is the only full generated-project foundation.
 2. Add-ons are overlays, not copies of core.
 3. Generated repositories contain no template-system internals.
-4. Generated application code stays language/framework neutral unless a future explicit stack layer is selected.
+4. The Agent Engineering core stays language/framework neutral. `NEW` may invoke a user-selected ecosystem starter without absorbing that stack into the template system.
 5. Manifest data is parsed, never sourced or evaluated.
 6. Non-empty generation targets are never overwritten.
 7. Release/deployment complexity remains opt-in.

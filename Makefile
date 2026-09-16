@@ -12,7 +12,7 @@ test:
 	bash tests/generation/test-generate.sh
 
 verify: test
-	bash -n tooling/lib.sh tooling/validate-config.sh tooling/generate.sh tests/generation/test-generate.sh
+	bash -n tooling/lib.sh tooling/validate-config.sh tooling/generate.sh tooling/new.sh tooling/adopt.sh tests/generation/test-generate.sh
 	git diff --check
 
 clean-dist:

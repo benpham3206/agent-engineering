@@ -4,7 +4,36 @@
 
 This repository composes one canonical, language-neutral project core with optional add-ons.
 
-## Generation flow
+## Entry flows
+
+```text
+NEW
+user-selected ecosystem starter
+    ↓
+runnable application
+    ↓
+ADOPT operating layer
+
+ADOPT
+existing application
+    ↓
+preflight conflicts
+    ↓
+Agent Engineering operating layer
+
+FEATURE
+requested product behavior
+    ↓
+current bottleneck or prerequisite
+    ↓
+narrowest role and change
+    ↓
+evidence
+```
+
+`NEW` does not encode a stack catalog. It executes the explicitly supplied ecosystem starter in an empty target and then delegates to the same adoption path as `ADOPT`. `FEATURE` is project behavior encoded in generated operating rules, not another generator command.
+
+## Manifest generation flow
 
 ```text
 project.conf
@@ -38,7 +67,7 @@ Owns template-maintainer doctrine. Generated repos receive the essential rules i
 
 ### `tooling/`
 
-Owns validation and composition. Manifest content is treated as untrusted data and never executed.
+Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project.
 
 ## Design rules
 

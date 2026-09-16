@@ -29,23 +29,7 @@ fi
 year="$(date +%Y)"
 replace_tokens "$output" "$CONFIG_PROJECT_NAME" "$year"
 
-template_version='unversioned'
-if [[ -f "$root/TEMPLATE_VERSION" ]]; then
-  template_version="$(tr -d '\r\n' < "$root/TEMPLATE_VERSION")"
-fi
-
-template_revision='unknown'
-if git -C "$root" rev-parse --short HEAD >/dev/null 2>&1; then
-  template_revision="$(git -C "$root" rev-parse --short HEAD)"
-fi
-
-cat > "$output/.engineering-manifest" <<EOF_MANIFEST
-TEMPLATE=agent-engineering
-TEMPLATE_VERSION=$template_version
-TEMPLATE_REVISION=$template_revision
-PROJECT_NAME=$CONFIG_PROJECT_NAME
-ADDONS=$NORMALIZED_ADDONS
-EOF_MANIFEST
+write_engineering_manifest "$output" "$CONFIG_PROJECT_NAME" "$NORMALIZED_ADDONS"
 
 if [[ -x "$output/scripts/verify-repo.sh" ]]; then
   bash "$output/scripts/verify-repo.sh"

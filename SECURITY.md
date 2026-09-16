@@ -4,6 +4,8 @@
 
 The generator treats manifests as untrusted data. It never sources, evaluates, or executes manifest values. It rejects unknown/duplicate keys, unsafe names, unknown add-ons, and non-empty output targets.
 
+`NEW` is different from manifest generation: it intentionally executes the ecosystem-starter argv explicitly supplied by the caller, with the caller's privileges, inside the requested empty target. Treat starter packages and their install scripts as third-party code. Review provenance and use only the filesystem, credentials, and network authority that bootstrap step actually needs. `ADOPT` executes no project content and refuses conflicting control files or a symlinked `scripts` boundary before copying files.
+
 ## Generated-project security floor
 
 Core projects receive:
