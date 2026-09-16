@@ -213,6 +213,58 @@ chmod +x "$mode_dir/tool.sh"
 bash -c 'source "$1"; replace_tokens "$2" mode-test 2026' _ "$root/tooling/lib.sh" "$mode_dir"
 [[ -x "$mode_dir/tool.sh" ]] || fail_contract "token replacement changed executable mode bits"
 require_contains "$mode_dir/tool.sh" "mode-test"
+
+adopt_out="$tmp/adopt-existing"
+mkdir -p "$adopt_out/app"
+printf 'existing readme\n' > "$adopt_out/README.md"
+printf 'existing app\n' > "$adopt_out/app/main.txt"
+if ! bash "$root/tooling/adopt.sh" "existing-app" "$adopt_out" >/dev/null; then
+  fail_contract "ADOPT failed for an existing project"
+else
+  require_contains "$adopt_out/README.md" "existing readme"
+  require_contains "$adopt_out/app/main.txt" "existing app"
+  require_file "$adopt_out/AGENTS.md"
+  require_file "$adopt_out/GOAL.md"
+  require_file "$adopt_out/.engineering-manifest"
+  require_contains "$adopt_out/.engineering-manifest" "PROJECT_NAME=existing-app"
+  if [[ -x "$adopt_out/scripts/verify-repo.sh" ]]; then
+    bash "$adopt_out/scripts/verify-repo.sh" >/dev/null || fail_contract "adopted project failed repository verification"
+  else
+    fail_contract "ADOPT did not install repository verification"
+  fi
+fi
+
+adopt_no_readme="$tmp/adopt-no-readme"
+mkdir -p "$adopt_no_readme"
+printf 'existing app\n' > "$adopt_no_readme/app.txt"
+if ! bash "$root/tooling/adopt.sh" "no-readme-app" "$adopt_no_readme" >/dev/null; then
+  fail_contract "ADOPT failed for an existing project without a README"
+else
+  require_contains "$adopt_no_readme/README.md" "# no-readme-app"
+  require_contains "$adopt_no_readme/README.md" "Agent Engineering"
+  require_contains "$adopt_no_readme/README.md" '`GOAL.md`'
+  require_not_contains "$adopt_no_readme/README.md" "make verify"
+fi
+
+fake_starter="$tmp/fake-starter.sh"
+cat > "$fake_starter" <<'EOF_STARTER'
+#!/usr/bin/env bash
+set -euo pipefail
+printf 'native starter readme\n' > README.md
+printf '{"name":"native-app"}\n' > package.json
+mkdir -p src
+printf 'working product\n' > src/app.txt
+EOF_STARTER
+chmod +x "$fake_starter"
+new_out="$tmp/new-native"
+if ! bash "$root/tooling/new.sh" "native-app" "$new_out" -- "$fake_starter" >/dev/null; then
+  fail_contract "NEW failed with an ecosystem-native starter"
+else
+  require_contains "$new_out/README.md" "native starter readme"
+  require_contains "$new_out/src/app.txt" "working product"
+  require_file "$new_out/AGENTS.md"
+  require_contains "$new_out/.engineering-manifest" "PROJECT_NAME=native-app"
+fi
 finish_contract "core generation"
 
 # 2. Engineering doctrine proves critical inherited behavior survives generation.
@@ -246,6 +298,10 @@ require_contains "$root/templates/core/GOAL.md" "## Success conditions"
 require_not_contains "$root/templates/core/GOAL.md" "## Current bottleneck"
 require_contains "$root/templates/core/REVIEWER_TASK.md" "State the change or decision under review."
 require_not_contains "$root/templates/core/REVIEWER_TASK.md" "accept or reject"
+require_contains "$root/templates/core/AGENTS.md" "## Feature path"
+require_contains "$root/templates/core/AGENTS.md" "Treat working product behavior as the initial bottleneck"
+require_contains "$root/templates/core/AGENTS.md" "A feature request authorizes pursuit of that bounded product outcome."
+require_contains "$root/templates/core/AGENTS.md" "Do not ask for approval again"
 finish_contract "inherited engineering doctrine"
 
 # 3. Open-source composition proves public-facing add-ons compose without organization policy.
@@ -335,6 +391,48 @@ nonempty_config="$tmp/nonempty.conf"
 write_config "$nonempty_config" "nonempty" "" "$nonempty_out"
 require_rejected "$nonempty_config"
 require_contains "$nonempty_out/existing.txt" "keep me"
+
+adopt_conflict="$tmp/adopt-conflict"
+mkdir -p "$adopt_conflict"
+printf 'existing agent rules\n' > "$adopt_conflict/AGENTS.md"
+printf 'keep me\n' > "$adopt_conflict/application.txt"
+if bash "$root/tooling/adopt.sh" "conflict-app" "$adopt_conflict" >/dev/null 2>&1; then
+  fail_contract "ADOPT overwrote or accepted a conflicting operating file"
+fi
+require_contains "$adopt_conflict/AGENTS.md" "existing agent rules"
+require_contains "$adopt_conflict/application.txt" "keep me"
+require_absent "$adopt_conflict/.engineering-manifest"
+require_absent "$adopt_conflict/GOAL.md"
+
+adopt_symlink="$tmp/adopt-symlink"
+adopt_symlink_escape="$tmp/adopt-symlink-escape"
+mkdir -p "$adopt_symlink" "$adopt_symlink_escape"
+if ln -s "$adopt_symlink_escape" "$adopt_symlink/scripts" 2>/dev/null && [[ -L "$adopt_symlink/scripts" ]]; then
+  if bash "$root/tooling/adopt.sh" "symlink-app" "$adopt_symlink" >/dev/null 2>&1; then
+    fail_contract "ADOPT followed a symlinked scripts boundary"
+  fi
+  require_absent "$adopt_symlink_escape/verify-repo.sh"
+  require_absent "$adopt_symlink/.engineering-manifest"
+  require_absent "$adopt_symlink/GOAL.md"
+else
+  rm -f "$adopt_symlink/scripts"
+fi
+
+new_nonempty="$tmp/new-nonempty"
+mkdir -p "$new_nonempty"
+printf 'keep me\n' > "$new_nonempty/existing.txt"
+new_marker="$tmp/new-starter-executed"
+unsafe_starter="$tmp/unsafe-starter.sh"
+cat > "$unsafe_starter" <<EOF_STARTER
+#!/usr/bin/env bash
+touch "$new_marker"
+EOF_STARTER
+chmod +x "$unsafe_starter"
+if bash "$root/tooling/new.sh" "nonempty-new" "$new_nonempty" -- "$unsafe_starter" >/dev/null 2>&1; then
+  fail_contract "NEW accepted a non-empty target"
+fi
+require_contains "$new_nonempty/existing.txt" "keep me"
+require_absent "$new_marker"
 
 marker="$tmp/manifest-executed"
 inert_config="$tmp/inert.conf"

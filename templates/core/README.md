@@ -40,6 +40,10 @@ STATUS.md
 
 Research resolves unknowns. Architects own cross-cutting decisions. Workers implement bounded changes. Reviewers and security reviewers return findings. Evidence updates `STATUS.md`, which identifies the next useful move.
 
+## Feature work
+
+For a requested feature, treat the smallest missing working product behavior as the initial bottleneck unless evidence exposes a prerequisite. The request already authorizes pursuit of that bounded outcome. Do not add planning or approval steps unless the implementation introduces a material unknown, architecture change, authority increase, significant dependency or cost, or difficult-to-reverse choice. The detailed routing rule lives in `AGENTS.md`.
+
 ## Common commands
 
 The repository exposes one stable interface regardless of language or framework:

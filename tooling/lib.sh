@@ -16,6 +16,41 @@ fail() {
   return 1
 }
 
+validate_project_name() {
+  local name="$1"
+  if [[ ! "$name" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
+    fail "unsafe PROJECT_NAME '$name'; use letters, numbers, '.', '_', or '-'" || return 1
+  fi
+}
+
+validate_shell_path() {
+  local path="$1"
+  if [[ "$path" == [A-Za-z]:/* || "$path" == [A-Za-z]:\\* ]]; then
+    fail "Windows drive path '$path' is not accepted; in Git Bash use a POSIX path such as /d/Codex/project" || return 1
+  fi
+}
+
+write_engineering_manifest() {
+  local output="$1" project_name="$2" addons="$3"
+  local template_version='unversioned'
+  local template_revision='unknown'
+
+  if [[ -f "$AE_ROOT/TEMPLATE_VERSION" ]]; then
+    template_version="$(tr -d '\r\n' < "$AE_ROOT/TEMPLATE_VERSION")"
+  fi
+  if git -C "$AE_ROOT" rev-parse --short HEAD >/dev/null 2>&1; then
+    template_revision="$(git -C "$AE_ROOT" rev-parse --short HEAD)"
+  fi
+
+  cat > "$output/.engineering-manifest" <<EOF_MANIFEST
+TEMPLATE=agent-engineering
+TEMPLATE_VERSION=$template_version
+TEMPLATE_REVISION=$template_revision
+PROJECT_NAME=$project_name
+ADDONS=$addons
+EOF_MANIFEST
+}
+
 is_supported_addon() {
   case "$1" in
     open-source|organization|deployment|releases|observability|benchmarks|performance|security-hardening) return 0 ;;
@@ -79,9 +114,7 @@ load_project_config() {
     fail 'PROJECT_NAME is required' || return 1
   fi
 
-  if [[ ! "$CONFIG_PROJECT_NAME" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]]; then
-    fail "unsafe PROJECT_NAME '$CONFIG_PROJECT_NAME'; use letters, numbers, '.', '_', or '-'" || return 1
-  fi
+  validate_project_name "$CONFIG_PROJECT_NAME" || return 1
 
   NORMALIZED_ADDONS=''
 
@@ -108,9 +141,7 @@ load_project_config() {
   fi
 
   if [[ -n "$CONFIG_OUTPUT_DIR" ]]; then
-    if [[ "$CONFIG_OUTPUT_DIR" == [A-Za-z]:/* || "$CONFIG_OUTPUT_DIR" == [A-Za-z]:\\* ]]; then
-      fail "Windows drive path '$CONFIG_OUTPUT_DIR' is not accepted; in Git Bash use a POSIX path such as /d/Codex/project" || return 1
-    fi
+    validate_shell_path "$CONFIG_OUTPUT_DIR" || return 1
     if [[ "$CONFIG_OUTPUT_DIR" = /* ]]; then
       RESOLVED_OUTPUT_DIR="$CONFIG_OUTPUT_DIR"
     else
