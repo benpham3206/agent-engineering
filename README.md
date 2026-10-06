@@ -175,9 +175,11 @@ OUTPUT_DIR=dist/internal-agent
 
 The repository also carries three opt-in upstream tools. They are repository assets and do not enter generated projects unless a maintainer integrates them explicitly.
 
-- [`skills/ponytail`](skills/ponytail/) contains the standalone Ponytail skill from [`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail), imported at `e3ba2aa6f1e6f0bc4d69eb09c9f0d0a93af56156` under the MIT license.
-- [`plugins/pstack`](plugins/pstack/) contains the complete pstack Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/pstack), imported at `c1c0a32802223f4be824112dd83d33ad29a8b26c` under the MIT license.
-- [`plugins/thermos`](plugins/thermos/) contains the complete Thermos Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/thermos), imported at the same revision under the MIT license.
+- [`skills/ponytail`](skills/ponytail/): the standalone Ponytail skill from [`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail) (MIT), tracked at its latest release.
+- [`plugins/pstack`](plugins/pstack/): the complete pstack Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/pstack) (MIT), tracked at `main`.
+- [`plugins/thermos`](plugins/thermos/): the complete Thermos Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/thermos) (MIT), tracked at `main`.
+
+[`tooling/vendor.lock`](tooling/vendor.lock) records the exact upstream commit of each. Every day, [`.github/workflows/sync-vendor.yml`](.github/workflows/sync-vendor.yml) runs [`tooling/sync-vendor.sh`](tooling/sync-vendor.sh) and `make verify`, then opens or updates one PR when upstream changed. These files are agent instructions, so review the upstream diff before merging. To sync by hand, run `bash tooling/sync-vendor.sh`.
 
 ## Engineering model
 
