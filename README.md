@@ -179,7 +179,7 @@ The repository also carries three opt-in upstream tools. They are repository ass
 - [`plugins/pstack`](plugins/pstack/): the complete pstack Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/pstack) (MIT), tracked at `main`.
 - [`plugins/thermos`](plugins/thermos/): the complete Thermos Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/thermos) (MIT), tracked at `main`.
 
-[`tooling/vendor.lock`](tooling/vendor.lock) records the exact upstream commit of each. Every day, [`.github/workflows/sync-vendor.yml`](.github/workflows/sync-vendor.yml) runs [`tooling/sync-vendor.sh`](tooling/sync-vendor.sh) and `make verify`, then opens or updates one PR when upstream changed. These files are agent instructions, so review the upstream diff before merging. To sync by hand, run `bash tooling/sync-vendor.sh`.
+[`tooling/vendor.lock`](tooling/vendor.lock) records the exact upstream commit of each. Every day, [`.github/workflows/sync-vendor.yml`](.github/workflows/sync-vendor.yml) runs [`tooling/sync-vendor.sh`](tooling/sync-vendor.sh) and `make verify`, then opens or updates one PR when upstream changed and starts CI on it (the required checks need a CI run). These files are agent instructions, so review the upstream diff before merging. To sync by hand, run `bash tooling/sync-vendor.sh`.
 
 ## Engineering model
 
