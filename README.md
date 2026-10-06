@@ -216,6 +216,8 @@ agent-engineering/
 └── tests/generation/        # seven generator scenario contracts
 ```
 
+The repository uses its own backbone: `GOAL.md`, `STATUS.md`, the `*_TASK.md` role files, and `scripts/` at the root. `make verify` runs `scripts/verify-repo.sh` here and fails when a root copy of a generic backbone file differs from `templates/core/`.
+
 ## Standards
 
 Start with:
