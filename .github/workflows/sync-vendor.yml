@@ -1,0 +1,57 @@
+name: Sync vendored agent tools
+
+# Daily: sync ponytail, pstack and thermos from upstream and open (or update) one PR.
+# A maintainer reviews and merges; nothing reaches main without review.
+on:
+  schedule:
+    - cron: "0 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: sync-vendor
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+      BRANCH: vendor-sync
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync from upstream
+        run: bash tooling/sync-vendor.sh
+
+      - name: Stop when nothing changed
+        id: diff
+        run: |
+          if [[ -z "$(git status --porcelain)" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # PRs opened with the workflow token do not trigger CI, so verify here.
+      - name: Verify
+        if: steps.diff.outputs.changed == 'true'
+        run: make verify
+
+      - name: Open or update the sync PR
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git add -A
+          git commit -q -m "Sync vendored agent tools from upstream" -m "$(cat tooling/vendor.lock)"
+          git push -q --force origin "$BRANCH"
+          if [[ -z "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]]; then
+            gh pr create --head "$BRANCH" --base main \
+              --title "Sync vendored agent tools from upstream" \
+              --body "$(printf 'Automated sync by `.github/workflows/sync-vendor.yml`. `make verify` passed in the workflow run.\n\nPinned commits:\n\n```\n%s\n```\n\nReview the upstream changes before merging: these files are agent instructions.' "$(cat tooling/vendor.lock)")"
+          fi
