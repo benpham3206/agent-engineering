@@ -129,3 +129,16 @@ Use these concerns when they become relevant; do not force every project to impl
 ## Completion
 
 A change is complete when the requested behavior exists, the acceptance criteria are proven with reliable evidence, every surface it reaches is accounted for, known failures are explicit, and the repository still describes reality.
+
+## Related standards
+
+Read the one that matches the task, when it applies:
+
+- [verification.md](verification.md): choosing evidence; who may write tests.
+- [testing.md](testing.md): which tests earn their cost.
+- [evolution.md](evolution.md): turning a fixed defect into a guardrail.
+- [documentation.md](documentation.md): which doc owns what; writing style.
+- [security.md](security.md): trust boundaries, secrets, agent authority.
+- [agents.md](agents.md): roles (architect, worker, reviewer, researcher).
+- [flow.md](flow.md): queues, backpressure, scaling under load.
+- [git.md](git.md), [ci-cd.md](ci-cd.md), [releases.md](releases.md), [evals.md](evals.md): short defaults for each area.
