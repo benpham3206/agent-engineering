@@ -1,0 +1,6 @@
+TEMPLATE=agent-engineering
+TEMPLATE_VERSION=self
+TEMPLATE_REVISION=self
+PROJECT_NAME=agent-engineering
+ADDONS=
+TEMPLATE_PATHS=templates/* addons/*/files/* tests/generation/* tooling/lib.sh

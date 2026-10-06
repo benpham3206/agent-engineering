@@ -102,4 +102,4 @@ Keep the system easy to understand and change. Add mature-system infrastructure 
 
 ## Generated configuration
 
-The exact template selection is recorded in `.engineering-manifest`.
+The exact template selection is recorded in `.engineering-manifest`. If this repository keeps template files with unreplaced double-brace tokens on purpose, list their paths as globs on a `TEMPLATE_PATHS=` line there; `scripts/verify-repo.sh` then skips them.

@@ -119,6 +119,19 @@ if [[ -x "$core_out/scripts/verify-repo.sh" ]]; then
   fi
   rm -f "$core_out/unreplaced-token.txt"
 
+  # A repository that ships its own templates (a factory) keeps tokens in them on purpose.
+  mkdir -p "$core_out/templates/app"
+  printf '{{PROJECT_NAME}}\n' > "$core_out/templates/app/README.md"
+  if bash "$core_out/scripts/verify-repo.sh" >/dev/null 2>&1; then
+    fail_contract "repository verifier skipped a template folder that TEMPLATE_PATHS does not declare"
+  fi
+  cp -p "$core_out/.engineering-manifest" "$tmp/manifest.bak"
+  printf 'TEMPLATE_PATHS=templates/*\n' >> "$core_out/.engineering-manifest"
+  bash "$core_out/scripts/verify-repo.sh" >/dev/null 2>&1 \
+    || fail_contract "repository verifier flagged a token in a TEMPLATE_PATHS folder"
+  cp -p "$tmp/manifest.bak" "$core_out/.engineering-manifest"
+  rm -rf "$core_out/templates"
+
   minimal_out="$tmp/minimal-core-output"
   cp -a "$core_out" "$minimal_out"
   rm -rf \
