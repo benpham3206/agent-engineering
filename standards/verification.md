@@ -40,6 +40,8 @@ Reproduce the defect when practical. Fix the root cause. Prefer eliminating a cl
 
 ## CI
 
+Verification must terminate in bounded time. Give every CI job an explicit deadline, such as `timeout-minutes` in GitHub Actions, so a hang fails fast. A timeout must not trigger cleanup broader than [`security.md`](security.md) allows.
+
 Keep always-on checks cheap and broadly useful. Put slower or risk-specific checks behind the project hooks or release path that needs them.
 
 The repository contract is `make verify`. Project-specific `check`, `test`, and `eval` hooks are optional. Configure them only when they provide durable evidence worth maintaining.

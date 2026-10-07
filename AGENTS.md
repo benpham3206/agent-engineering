@@ -5,10 +5,10 @@ These rules apply to agents and humans modifying the **Agent Engineering templat
 ## Read first
 
 1. `README.md`
-2. `standards/engineering`
-2. `ARCHITECTURE.md`
-3. `schema/project-config.md`
-4. the relevant file under `standards/`
+2. `standards/engineering.md`
+3. `ARCHITECTURE.md`
+4. `schema/project-config.md`
+5. the relevant file under `standards/`
 
 Do not infer template intent from generated files alone.
 

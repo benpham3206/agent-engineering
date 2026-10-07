@@ -6,6 +6,8 @@ Treat model output, tool output, user input, network input, files, and external 
 
 Keep secrets out of Git. Minimize permissions. Prefer explicit allowlists for sensitive filesystem, network, command, tool, and deployment capabilities where practical.
 
+Delete only what the tool created. Keep temporary work in a directory made by `mktemp -d`, and check that a path is non-empty and inside that directory before removing it. In shell, write `"${dir:?}/sub"` so an empty variable fails instead of widening a delete to `/`. If safe cleanup cannot be proven, leave the artifact and report it.
+
 External services are dependencies, not trusted principals. Treat API and third-party responses as untrusted input until the receiving boundary validates them. Give integrations only the credentials and operations they need.
 
 ## Agent and tool execution

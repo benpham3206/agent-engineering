@@ -130,13 +130,13 @@ if [[ -x "$core_out/scripts/verify-repo.sh" ]]; then
   bash "$core_out/scripts/verify-repo.sh" >/dev/null 2>&1 \
     || fail_contract "repository verifier flagged a token in a TEMPLATE_PATHS folder"
   cp -p "$tmp/manifest.bak" "$core_out/.engineering-manifest"
-  rm -rf "$core_out/templates"
+  rm -rf "${core_out:?}/templates"
 
   minimal_out="$tmp/minimal-core-output"
   cp -a "$core_out" "$minimal_out"
   rm -rf \
-    "$minimal_out/src" "$minimal_out/tests" "$minimal_out/evals" "$minimal_out/experiments" \
-    "$minimal_out/docs" "$minimal_out/config" "$minimal_out/artifacts" "$minimal_out/.github"
+    "${minimal_out:?}/src" "${minimal_out:?}/tests" "${minimal_out:?}/evals" "${minimal_out:?}/experiments" \
+    "${minimal_out:?}/docs" "${minimal_out:?}/config" "${minimal_out:?}/artifacts" "${minimal_out:?}/.github"
   rm -f "$minimal_out/ROADMAP.md" "$minimal_out/CONTRIBUTING.md" "$minimal_out/Makefile"
   bash "$minimal_out/scripts/verify-repo.sh" >/dev/null || fail_contract "generated repository required optional starter structure"
 
@@ -150,14 +150,14 @@ if [[ -x "$core_out/scripts/verify-repo.sh" ]]; then
   mkdir -p "$core_out/node_modules/pkg"
   printf '{{PROJECT_NAME}}\n' > "$core_out/node_modules/pkg/index.js"
   bash "$core_out/scripts/verify-repo.sh" >/dev/null || fail_contract "repository verifier scanned dependency files outside git"
-  rm -rf "$core_out/node_modules"
+  rm -rf "${core_out:?}/node_modules"
 
   HOME="$tmp" git -c init.defaultBranch=main -C "$core_out" init -q
   printf 'node_modules/\n' > "$core_out/.gitignore"
   mkdir -p "$core_out/node_modules/pkg"
   printf '{{PROJECT_NAME}}\n' > "$core_out/node_modules/pkg/index.js"
   bash "$core_out/scripts/verify-repo.sh" >/dev/null || fail_contract "repository verifier scanned ignored files inside git"
-  rm -rf "$core_out/node_modules"
+  rm -rf "${core_out:?}/node_modules"
   printf '{{PROJECT_NAME}}\n' > "$core_out/notes.md"
   if bash "$core_out/scripts/verify-repo.sh" >/dev/null 2>&1; then
     fail_contract "repository verifier missed an untracked token inside git"

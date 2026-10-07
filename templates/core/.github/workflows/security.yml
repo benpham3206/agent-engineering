@@ -14,9 +14,10 @@ jobs:
   repository-security:
     name: repository-security
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Check tracked secret-file policy
         run: bash scripts/security-check.sh

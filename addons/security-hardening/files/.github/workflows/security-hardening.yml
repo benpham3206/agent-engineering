@@ -11,7 +11,8 @@ permissions:
 jobs:
   repository-security:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Repository security contract
         run: bash scripts/security-check.sh
