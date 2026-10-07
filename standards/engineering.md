@@ -2,16 +2,16 @@
 
 Engineer from first principles. Prefer the simplest reversible path that produces evidence. Project and harness instructions that are more specific win; this standard fills the gaps.
 
-## Gate
+## Axioms
 
-Is the work low-consequence, low-uncertainty, and highly reversible — all three?
+1. Reality is authoritative. Models, plans, documentations, and assumptions are approximations.
+2. Engineering is achieving an intended outcome under constraints and reality. 
+3. Every abstraction, dependency, and stateful component carries cost.
+4. Uncertainty, consequence, and irreversibility determine required rigor.
+5. Claims of correctness require evidence
+6. Simpler solutions are preferred when they satisfy the same requirements.
 
-- **Yes:** fast path. Build → verify → iterate.
-- **No:** Plan → Build → Refine. Refine routes back until the definition of done holds.
-
-A clear outcome alone does not open the fast path. A clear but irreversible change (migration, publish, delete) still needs Plan steps 4 and 8.
-
-## Global
+## Principles
 
 1. Scale rigor with consequence, uncertainty, and irreversibility.
 2. Preserve traceability: intent → decisions → implementation → evidence.
@@ -40,6 +40,15 @@ Language, framework, libraries, storage, UI technology, third parties, infrastru
 Excellent is the default. Timeless is the goal. Minimize scope, not craftsmanship. Favor clear, durable work that fits its ecosystem over fashionable, clever, or speculative machinery. For user-facing work, visual quality and accessibility are part of correctness.
 
 Defend against both accidental complexity and hostile behavior. Use the simplest mechanism that preserves the required boundary, correctness, and recovery properties.
+
+## Gate
+
+Is the work low-consequence, low-uncertainty, and highly reversible — all three?
+
+- **Yes:** fast path. Build → verify → iterate.
+- **No:** Plan → Build → Refine. Refine routes back until the definition of done holds.
+
+A clear outcome alone does not open the fast path. A clear but irreversible change (migration, publish, delete) still needs Plan steps 4 and 8.
 
 ## Plan
 
