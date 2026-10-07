@@ -5,6 +5,7 @@ These rules apply to agents and humans modifying the **Agent Engineering templat
 ## Read first
 
 1. `README.md`
+2. `standards/engineering`
 2. `ARCHITECTURE.md`
 3. `schema/project-config.md`
 4. the relevant file under `standards/`
