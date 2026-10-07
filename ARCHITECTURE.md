@@ -21,6 +21,15 @@ preflight conflicts
     ↓
 Agent Engineering operating layer
 
+UPDATE
+validate manifest
+    ↓
+resolve baseline (TEMPLATE_REVISION)
+    ↓
+preflight every managed path
+    ↓
+apply all, or refuse and write nothing
+
 FEATURE
 requested product behavior
     ↓
@@ -67,7 +76,7 @@ Owns template-maintainer doctrine. Generated repos receive the essential rules i
 
 ### `tooling/`
 
-Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one. The backbone set is enumerated in `templates/core/scripts/backbone.list` and consumed by both `adopt.sh` and the generated `verify-repo.sh`.
+Owns validation, composition, NEW, ADOPT, and UPDATE. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one. The backbone set is enumerated in `templates/core/scripts/backbone.list` and consumed by `adopt.sh`, `update.sh`, and the generated `verify-repo.sh`. A project's `TEMPLATE_REVISION` is the baseline the next UPDATE compares against; UPDATE advances it only after writing.
 
 ## Self-hosting
 
@@ -90,7 +99,7 @@ Freshness arrives as proposals, never as merges: `tooling/sync-vendor.sh` opens 
 - Verification protects durable invariants, not the original starter tree.
 - Generated output looks like a normal project, not a template engine.
 - The secure/correctness floor is universal; heavy hardening is opt-in.
-- Verification scales with risk. Generated behavior is protected by seven scenario contracts that cover distinct failure classes rather than many per-detail assertions.
+- Verification scales with risk. Generated behavior is protected by eight scenario contracts that cover distinct failure classes rather than many per-detail assertions.
 - Worker-agent scope is narrow; cross-cutting changes escalate to architecture-aware agents.
 - Project-independent lessons can move upstream into core or standards after they prove broadly useful.
 

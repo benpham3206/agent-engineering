@@ -2,7 +2,7 @@
 
 ## Objective
 
-Give any repository a small, verified operating layer for coding agents: one engineering policy, role boundaries, state files, and checks. Build it with `tooling/generate.sh` (NEW) or `tooling/adopt.sh` (ADOPT).
+Give any repository a small, verified operating layer for coding agents: one engineering policy, role boundaries, state files, and checks. Build it with `tooling/generate.sh` (NEW) or `tooling/adopt.sh` (ADOPT), and bring it forward with `tooling/update.sh` (UPDATE).
 
 ## Success conditions
 
