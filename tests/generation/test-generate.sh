@@ -565,5 +565,162 @@ require_rejected "$inert_config"
 require_absent "$marker"
 finish_contract "destructive-input safety"
 
+# 8. Downstream update proves UPDATE replaces only bytes it can prove the old template owns, and changes nothing when it refuses.
+fae="$tmp/update-ae"
+mkdir -p "$fae/templates"
+cp -R "$root/tooling" "$fae/tooling"
+cp -R "$root/templates/core" "$fae/templates/core"
+cp "$root/TEMPLATE_VERSION" "$fae/TEMPLATE_VERSION"
+fgit() { HOME="$tmp" git -C "$fae" -c user.name=contract -c user.email=contract@example.invalid -c core.autocrlf=false "$@"; }
+fgit init -q
+fgit config core.autocrlf false
+printf 'old worker line\n' >> "$fae/templates/core/WORKER_TASK.md"
+printf '# old verifier line\n' >> "$fae/templates/core/scripts/verify-repo.sh"
+printf '\nOld agents line.\n' >> "$fae/templates/core/AGENTS.md"
+fgit add -A
+fgit commit -q -m old
+old_rev="$(fgit rev-parse --short HEAD)"
+
+snapshot() {
+  (cd "$1" && find . \( -type f -o -type l \) -print | LC_ALL=C sort | while IFS= read -r f; do
+    if [[ -L "$f" ]]; then printf '%s -> %s\n' "$f" "$(readlink "$f")"; else printf '%s %s\n' "$f" "$(cksum < "$f")"; fi
+  done)
+}
+update_adopt() {
+  mkdir -p "$2"
+  printf 'app\n' > "$2/app.txt"
+  [[ -n "${3:-}" ]] && printf '%s' "$3" > "$2/AGENTS.md"
+  bash "$fae/tooling/adopt.sh" "$1" "$2" >/dev/null || fail_contract "fixture ADOPT failed: $1"
+}
+set_manifest() {
+  { grep -v "^$2=" "$1/.engineering-manifest"; printf '%s=%s\n' "$2" "$3"; } > "$tmp/manifest.new"
+  mv "$tmp/manifest.new" "$1/.engineering-manifest"
+}
+to_crlf() {
+  awk '{ printf "%s\r\n", $0 }' "$1" > "$1.crlf"
+  mv "$1.crlf" "$1"
+}
+run_update() {
+  bash "$fae/tooling/update.sh" "$@" >/dev/null 2>&1
+}
+require_refused_unchanged() {
+  local label="$1"; shift
+  local dir="${*: -1}" before
+  before="$(snapshot "$dir")"
+  if run_update "$@"; then
+    fail_contract "UPDATE accepted $label"
+  fi
+  [[ "$(snapshot "$dir")" == "$before" ]] || fail_contract "UPDATE changed files while refusing $label"
+}
+
+u_clean="$tmp/update-clean"
+update_adopt clean-app "$u_clean" $'project rule one\n  indented rule  \n'
+for f in GOAL.md STATUS.md ARCHITECTURE.md SECURITY.md README.md Makefile; do
+  printf 'local %s\n' "$f" >> "$u_clean/$f"
+done
+u_conflict="$tmp/update-conflict"
+update_adopt conflict-app "$u_conflict"
+printf '# local edit\n' >> "$u_conflict/scripts/run-hook.sh"
+u_prefix="$tmp/update-prefix"
+update_adopt prefix-app "$u_prefix"
+{ printf '# Locally renamed rules\n'; tail -n +2 "$u_prefix/AGENTS.md"; } > "$tmp/prefix.new"
+mv "$tmp/prefix.new" "$u_prefix/AGENTS.md"
+u_link="$tmp/update-link"
+update_adopt link-app "$u_link"
+u_baseline="$tmp/update-baseline"
+update_adopt baseline-app "$u_baseline"
+u_self="$tmp/update-self"
+update_adopt self-app "$u_self"
+set_manifest "$u_self" TEMPLATE_REVISION self
+u_inject="$tmp/update-inject"
+update_adopt inject-app "$u_inject"
+set_manifest "$u_inject" PROJECT_NAME "\$(touch $tmp/update-executed)"
+u_crlf="$tmp/update-crlf"
+update_adopt crlf-app "$u_crlf"
+for f in WORKER_TASK.md AGENTS.md scripts/security-check.sh; do to_crlf "$u_crlf/$f"; done
+set_manifest "$u_crlf" ADDONS open-source
+set_manifest "$u_crlf" TEMPLATE_PATHS 'templates/*'
+cp "$u_crlf/scripts/security-check.sh" "$tmp/update-current.crlf"
+u_dirty="$tmp/update-dirty"
+update_adopt dirty-app "$u_dirty"
+
+old_agents_bytes="$(fgit show "$old_rev:templates/core/AGENTS.md" | wc -c | tr -d ' ')"
+tail -c +"$((old_agents_bytes + 1))" "$u_clean/AGENTS.md" > "$tmp/update-suffix"
+(cd "$u_clean" && cksum GOAL.md STATUS.md ARCHITECTURE.md SECURITY.md README.md Makefile app.txt) > "$tmp/update-owned.before"
+set_manifest "$u_baseline" TEMPLATE_REVISION deadbee
+
+cp "$root/templates/core/WORKER_TASK.md" "$fae/templates/core/WORKER_TASK.md"
+cp -p "$root/templates/core/scripts/verify-repo.sh" "$fae/templates/core/scripts/verify-repo.sh"
+cp "$root/templates/core/AGENTS.md" "$fae/templates/core/AGENTS.md"
+printf '# Extra task\n' > "$fae/templates/core/EXTRA_TASK.md"
+printf 'EXTRA_TASK.md\n' >> "$fae/templates/core/scripts/backbone.list"
+fgit add -A
+fgit commit -q -m new
+new_rev="$(fgit rev-parse --short HEAD)"
+
+before="$(snapshot "$u_clean")"
+run_update --check "$u_clean" || fail_contract "UPDATE --check refused a cleanly updatable project"
+[[ "$(snapshot "$u_clean")" == "$before" ]] || fail_contract "UPDATE --check wrote to the project"
+if run_update "$u_clean"; then
+  for f in WORKER_TASK.md scripts/verify-repo.sh scripts/backbone.list EXTRA_TASK.md; do
+    require_same "$fae/templates/core/$f" "$u_clean/$f"
+  done
+  [[ -x "$u_clean/scripts/verify-repo.sh" ]] || fail_contract "UPDATE dropped the executable mode of a replaced script"
+  cat "$fae/templates/core/AGENTS.md" "$tmp/update-suffix" > "$tmp/update-agents.expected"
+  require_same "$tmp/update-agents.expected" "$u_clean/AGENTS.md"
+  (cd "$u_clean" && cksum GOAL.md STATUS.md ARCHITECTURE.md SECURITY.md README.md Makefile app.txt) > "$tmp/update-owned.after"
+  require_same "$tmp/update-owned.before" "$tmp/update-owned.after"
+  require_contains "$u_clean/.engineering-manifest" "TEMPLATE_REVISION=$new_rev"
+  require_contains "$u_clean/.engineering-manifest" "PROJECT_NAME=clean-app"
+  bash "$u_clean/scripts/verify-repo.sh" >/dev/null || fail_contract "updated project failed its own verifier"
+  before="$(snapshot "$u_clean")"
+  run_update "$u_clean" || fail_contract "UPDATE was not idempotent on an up-to-date project"
+  [[ "$(snapshot "$u_clean")" == "$before" ]] || fail_contract "UPDATE rewrote an up-to-date project"
+else
+  fail_contract "UPDATE refused a cleanly updatable project"
+fi
+
+require_refused_unchanged "a late local edit after an updatable early file" "$u_conflict"
+require_refused_unchanged "a late local edit in check mode" --check "$u_conflict"
+require_refused_unchanged "an edited AGENTS.md template prefix" "$u_prefix"
+require_refused_unchanged "an unknown baseline revision" "$u_baseline"
+require_refused_unchanged "a self-hosting baseline" "$u_self"
+require_refused_unchanged "an executable manifest value" "$u_inject"
+require_absent "$tmp/update-executed"
+
+printf 'outside\n' > "$tmp/update-link-target"
+mv "$u_link/scripts/run-hook.sh" "$tmp/update-link-original"
+if ln -s "$tmp/update-link-target" "$u_link/scripts/run-hook.sh" 2>/dev/null && [[ -L "$u_link/scripts/run-hook.sh" ]]; then
+  require_refused_unchanged "a symlinked managed file" "$u_link"
+  require_contains "$tmp/update-link-target" "outside"
+fi
+
+if run_update "$u_crlf"; then
+  cp "$fae/templates/core/WORKER_TASK.md" "$tmp/update-worker.crlf"
+  to_crlf "$tmp/update-worker.crlf"
+  require_same "$tmp/update-worker.crlf" "$u_crlf/WORKER_TASK.md"
+  cp "$fae/templates/core/AGENTS.md" "$tmp/update-agents.crlf"
+  to_crlf "$tmp/update-agents.crlf"
+  require_same "$tmp/update-agents.crlf" "$u_crlf/AGENTS.md"
+  require_same "$tmp/update-current.crlf" "$u_crlf/scripts/security-check.sh"
+  require_contains "$u_crlf/.engineering-manifest" "ADDONS=open-source"
+  require_contains "$u_crlf/.engineering-manifest" "TEMPLATE_PATHS=templates/*"
+  require_absent "$u_crlf/LICENSE"
+else
+  fail_contract "UPDATE refused a project whose managed files use CRLF line endings"
+fi
+
+printf 'uncommitted template edit\n' >> "$fae/templates/core/WORKER_TASK.md"
+require_refused_unchanged "an Agent Engineering checkout with uncommitted template changes" "$u_dirty"
+u_adopt_dirty="$tmp/update-adopt-dirty"
+mkdir -p "$u_adopt_dirty"
+if bash "$fae/tooling/adopt.sh" adopt-dirty-app "$u_adopt_dirty" >/dev/null 2>&1; then
+  fail_contract "ADOPT recorded a baseline revision that its copied templates do not match"
+fi
+require_absent "$u_adopt_dirty/.engineering-manifest"
+fgit checkout -q -- templates/core/WORKER_TASK.md
+run_update "$u_dirty" || fail_contract "UPDATE refused a clean project after the template checkout was restored"
+finish_contract "downstream update"
+
 printf '\n%d contracts passed; %d failed\n' "$passed" "$failed"
 [[ "$failed" -eq 0 ]]

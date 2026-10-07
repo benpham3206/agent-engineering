@@ -14,6 +14,7 @@ project_name="$1"
 target_arg="$2"
 validate_project_name "$project_name"
 validate_shell_path "$target_arg"
+require_committed_templates templates/core
 
 if [[ ! -d "$target_arg" ]]; then
   fail "existing project directory not found: $target_arg"
@@ -27,11 +28,23 @@ if [[ -L "$target/scripts" || ( -e "$target/scripts" && ! -d "$target/scripts" )
   exit 1
 fi
 
-stage="$(mktemp -d)"
-trap 'rm -rf "$stage"' EXIT
-
 backbone_list="$root/templates/core/scripts/backbone.list"
 [[ -f "$backbone_list" ]] || fail 'backbone list missing'
+
+stage="$(mktemp -d)"
+# Unlink only the files this script staged, then remove the emptied directories; never delete recursively.
+cleanup() {
+  local path
+  while IFS= read -r path; do
+    rm -f "$stage/$path"
+  done < <(backbone_paths)
+  rm -f "$stage/README.md" "$stage/Makefile" "$stage/.engineering-manifest"
+  while IFS= read -r path; do
+    [[ "$path" == */* ]] && rmdir "$stage/${path%/*}" 2>/dev/null || true
+  done < <(backbone_paths)
+  rmdir "$stage" 2>/dev/null || printf 'warning: left temporary directory %s\n' "$stage" >&2
+}
+trap cleanup EXIT
 
 backbone_paths() {
   local path

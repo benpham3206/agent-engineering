@@ -79,12 +79,13 @@ Agent Engineering defines the environment in which work happens:
 
 The workflow is IDE- and ADE-agnostic. Cursor commands below are examples of one host integration. Another host can expose the same workflow through skills, rules, commands, or configuration. When a host has no command equivalent, apply the instructions in the linked `SKILL.md` and playbook files directly.
 
-## NEW, ADOPT, and FEATURE
+## NEW, ADOPT, UPDATE, and FEATURE
 
-Agent Engineering has three fast paths for project work:
+Agent Engineering has four paths for project work:
 
 - **NEW** starts with the language, framework, and libraries chosen by the user or architect. It runs the ecosystem's native starter in an empty target, then adds the Agent Engineering operating layer.
 - **ADOPT** adds the operating layer to an existing project without restructuring application code or replacing its README. It merges an existing `AGENTS.md`, adds a `Makefile` only when the project has none, and fails before copying if another control file conflicts.
+- **UPDATE** reconciles an already managed project with a newer operating layer. It is not a re-run of ADOPT.
 - **FEATURE** treats working product behavior as the initial bottleneck for a requested feature. Escalate to research, architecture, or security review only when the feature exposes a material reason.
 
 ## Repository setup without pstack
@@ -118,6 +119,15 @@ To adopt an existing project:
 ```bash
 tooling/adopt.sh my-app ../existing-app
 ```
+
+To update a managed project to this checkout's committed templates (check first; `--check` writes nothing):
+
+```bash
+tooling/update.sh --check ../existing-project
+tooling/update.sh ../existing-project
+```
+
+UPDATE owns the files in `templates/core/scripts/backbone.list` except `GOAL.md`, `STATUS.md`, `ARCHITECTURE.md`, and `SECURITY.md`, and only the template prefix of `AGENTS.md`; project rules after that prefix are kept byte for byte. It never touches the project-owned files, `README.md`, `Makefile`, or anything else. It compares each file with the template at the manifest's `TEMPLATE_REVISION`, accepting LF or CRLF line endings. It replaces a file only when the file still matches that template, and refuses the whole update without writing when any file was changed locally. It refuses rather than merges. Add-on files and removals of files dropped from the template are out of scope.
 
 The existing manifest-based generator remains available when you want the full language-neutral starter tree rather than an ecosystem-native application scaffold.
 
@@ -213,7 +223,7 @@ agent-engineering/
 ├── tooling/                 # safe validation + generation
 ├── schema/                  # manifest contract
 ├── examples/                # example manifests
-└── tests/generation/        # seven generator scenario contracts
+└── tests/generation/        # eight generator scenario contracts
 ```
 
 The repository uses its own backbone: `GOAL.md`, `STATUS.md`, the `*_TASK.md` role files, and `scripts/` at the root. `make verify` runs `scripts/verify-repo.sh` here and fails when a root copy of a generic backbone file differs from `templates/core/`.
