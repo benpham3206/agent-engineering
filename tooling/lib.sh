@@ -30,6 +30,14 @@ validate_shell_path() {
   fi
 }
 
+# The manifest records HEAD as the baseline, so the copied template files must be HEAD's.
+require_committed_templates() {
+  git -C "$AE_ROOT" rev-parse --is-inside-work-tree >/dev/null 2>&1 || return 0
+  if [[ -n "$(git -C "$AE_ROOT" status --porcelain -- "$@")" ]]; then
+    fail 'uncommitted template changes; commit or stash them first' || return 1
+  fi
+}
+
 write_engineering_manifest() {
   local output="$1" project_name="$2" addons="$3"
   local template_version='unversioned'
