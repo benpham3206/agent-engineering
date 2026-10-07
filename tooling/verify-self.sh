@@ -16,4 +16,19 @@ while IFS= read -r path; do
     drift=1
   fi
 done < "$root/templates/core/scripts/backbone.list"
+if ! cmp -s "$root/templates/core/.github/dependabot.yml" "$root/.github/dependabot.yml"; then
+  printf 'dogfood drift: .github/dependabot.yml differs from templates/core/.github/dependabot.yml; copy the template over it\n' >&2
+  drift=1
+fi
+
+# Dependabot proposes newer actions; this proves every tracked copy agrees with root CI before review merges it.
+checkout_ref='actions/checkout@[^[:space:]"'\'']+'
+canonical="$(git -C "$root" grep -h -o -E "$checkout_ref" -- .github/workflows/ci.yml | head -n 1)" \
+  || { printf 'checkout drift: no actions/checkout reference in .github/workflows/ci.yml\n' >&2; exit 1; }
+while IFS= read -r hit; do
+  if [ "${hit#*:}" != "$canonical" ]; then
+    printf 'checkout drift: %s uses %s; .github/workflows/ci.yml uses %s\n' "${hit%%:*}" "${hit#*:}" "$canonical" >&2
+    drift=1
+  fi
+done < <(git -C "$root" grep -o -E "$checkout_ref" -- '*.yml' '*.yaml' || true)
 exit "$drift"

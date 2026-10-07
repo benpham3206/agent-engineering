@@ -9,14 +9,14 @@ This repository uses its own backbone (dogfood) and downstream repositories refe
 ## Working
 
 - NEW and ADOPT generate projects that pass `scripts/verify-repo.sh` (`make verify`).
-- This repository passes its own `scripts/verify-repo.sh`.
+- This repository passes its own `scripts/verify-repo.sh`, and `tooling/verify-self.sh` fails on drift between its generic copies, Dependabot config, or `actions/checkout` references and the reusable sources.
 - Vendored ponytail, pstack, and thermos sync daily through a reviewed PR (`tooling/sync-vendor.sh`).
+- Dependabot proposes GitHub Actions updates as reviewed PRs, here and in generated projects.
 - `main` is protected by a ruleset (`tooling/protect-main.sh`).
 
 ## Failing or missing
 
 - A project made with ADOPT gets no later template changes; there is no update command yet.
-- The first automated vendor sync PR has not run since its CI dispatch was added.
 
 ## Current bottleneck
 

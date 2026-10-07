@@ -69,6 +69,20 @@ Owns template-maintainer doctrine. Generated repos receive the essential rules i
 
 Owns validation, composition, NEW, and ADOPT. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one. The backbone set is enumerated in `templates/core/scripts/backbone.list` and consumed by both `adopt.sh` and the generated `verify-repo.sh`.
 
+## Self-hosting
+
+```text
+standards/ (doctrine)    templates/core/ + addons/ (reusable source)
+                              ↓ generation        ↓ generic pieces
+                         downstream repos     repository root (dogfood instance + template factory)
+                                                  ↓
+                                              tooling/verify-self.sh
+```
+
+The repository root is a specialized instance of the system, not output regenerated from it. `GOAL.md`, `STATUS.md`, `ARCHITECTURE.md`, `AGENTS.md`, and `SECURITY.md` hold root-specific content and may differ from `templates/core/`. Every other generic file kept at both root and `templates/core/` (the backbone list and `.github/dependabot.yml`) must match byte for byte, and every tracked `actions/checkout` reference must match root CI. `tooling/verify-self.sh` enforces both.
+
+Freshness arrives as proposals, never as merges: `tooling/sync-vendor.sh` opens a PR for vendored agent tools, Dependabot opens PRs for GitHub Actions, and ordinary changes go through a PR and `make verify`. A proposal lands only after verification and human review. A confirmed defect that is not project-specific is fixed in `standards/`, `templates/core/`, `addons/`, or `tooling/`, then copied to the root. Nothing regenerates the root or the templates from themselves.
+
 ## Design rules
 
 - One source of truth for the full core.
