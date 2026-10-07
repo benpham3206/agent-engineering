@@ -12,6 +12,7 @@ fi
 
 config="$1"
 load_project_config "$config"
+require_committed_templates templates/core addons
 validate_output_dir "$RESOLVED_OUTPUT_DIR"
 
 output="$RESOLVED_OUTPUT_DIR"

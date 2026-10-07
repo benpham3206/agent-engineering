@@ -712,6 +712,12 @@ fi
 
 printf 'uncommitted template edit\n' >> "$fae/templates/core/WORKER_TASK.md"
 require_refused_unchanged "an Agent Engineering checkout with uncommitted template changes" "$u_dirty"
+u_adopt_dirty="$tmp/update-adopt-dirty"
+mkdir -p "$u_adopt_dirty"
+if bash "$fae/tooling/adopt.sh" adopt-dirty-app "$u_adopt_dirty" >/dev/null 2>&1; then
+  fail_contract "ADOPT recorded a baseline revision that its copied templates do not match"
+fi
+require_absent "$u_adopt_dirty/.engineering-manifest"
 fgit checkout -q -- templates/core/WORKER_TASK.md
 run_update "$u_dirty" || fail_contract "UPDATE refused a clean project after the template checkout was restored"
 finish_contract "downstream update"

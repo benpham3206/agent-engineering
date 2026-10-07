@@ -20,10 +20,7 @@ target_arg="$1"
 
 # The Agent Engineering checkout is the source of truth: its committed HEAD, never uncommitted edits.
 git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1 || { fail "not a git work tree: $root"; exit 1; }
-if [[ -n "$(git -C "$root" status --porcelain -- templates/core)" ]]; then
-  fail 'uncommitted template changes; commit or stash them first'
-  exit 1
-fi
+require_committed_templates templates/core || exit 1
 new_revision="$(git -C "$root" rev-parse --short HEAD)"
 new_version="$(tr -d '\r\n' < "$root/TEMPLATE_VERSION")"
 

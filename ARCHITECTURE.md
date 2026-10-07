@@ -76,7 +76,7 @@ Owns template-maintainer doctrine. Generated repos receive the essential rules i
 
 ### `tooling/`
 
-Owns validation, composition, NEW, ADOPT, and UPDATE. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one. The backbone set is enumerated in `templates/core/scripts/backbone.list` and consumed by `adopt.sh`, `update.sh`, and the generated `verify-repo.sh`. A project's `TEMPLATE_REVISION` is the baseline the next UPDATE compares against; UPDATE advances it only after writing.
+Owns validation, composition, NEW, ADOPT, and UPDATE. Manifest content is treated as untrusted data and never executed. NEW executes only the starter argv explicitly supplied by the caller; ADOPT stages and preflights the operating layer before copying it into an existing project, merging an existing AGENTS.md into the generated one and skipping Makefile when the project already has one. The backbone set is enumerated in `templates/core/scripts/backbone.list` and consumed by `adopt.sh`, `update.sh`, and the generated `verify-repo.sh`. A project's `TEMPLATE_REVISION` is the baseline the next UPDATE compares against; UPDATE advances it only after writing. Every path that records a revision refuses while the templates have uncommitted changes, so the recorded revision always matches the copied files.
 
 ## Self-hosting
 
