@@ -2,7 +2,7 @@
 
 Agent Engineering is a way to build software with coding agents without letting complexity grow faster than the project.
 
-Agent Engineering owns the project policy, constraints, authority, state, architecture, security boundaries, and repository setup. Its preferred execution workflow is [`pstack`](plugins/pstack/README.md), built around [`poteto-mode`](plugins/pstack/skills/poteto-mode/SKILL.md). The pstack workflow is documented as portable skills and playbooks, so you can use it through a plugin, skill loader, rules file, or another host integration.
+Agent Engineering owns the project policy, constraints, authority, state, architecture, security boundaries, and repository setup. Its preferred execution workflow is [`pstack`](plugins/pstack/README.md), built around [`poteto-mode`](plugins/pstack/skills/poteto-mode/SKILL.md). The pstack workflow is documented as portable skills and playbooks, so you can use it through a plugin, skill loader, rules file, or another host integration. pstack runs inside the authority rules in [`AGENTS.md`](AGENTS.md#authority); where its autonomy text says external actions proceed without asking, `AGENTS.md` wins.
 
 ## Start here
 
