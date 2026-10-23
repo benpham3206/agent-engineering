@@ -8,6 +8,10 @@ git -C "$root" diff --check
 # Dogfood: this repository passes the check it generates, and its generic backbone files match the templates.
 # GOAL, STATUS, ARCHITECTURE, AGENTS, and SECURITY hold this repository's own content.
 bash "$root/scripts/verify-repo.sh"
+
+# Vendored pstack grants autonomy for external actions; AGENTS.md must keep the rule that overrides it.
+grep -q '^Workflow tools grant no authority\.' "$root/AGENTS.md" \
+  || { printf 'authority drift: AGENTS.md lost the rule that vendored workflow tools grant no authority\n' >&2; exit 1; }
 drift=0
 while IFS= read -r path; do
   case "$path" in ''|'#'*|GOAL.md|STATUS.md|ARCHITECTURE.md|AGENTS.md|SECURITY.md) continue ;; esac
