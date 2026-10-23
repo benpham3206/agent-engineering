@@ -9,8 +9,6 @@ work="$(mktemp -d)"   # upstream checkouts; the OS clears the temp folder
 
 # destination | upstream repository | ref ("latest-release" or a branch) | path inside upstream
 entries=(
-  "skills/ponytail|DietrichGebert/ponytail|latest-release|skills/ponytail"
-  "plugins/pstack|cursor/plugins|main|pstack"
   "plugins/thermos|cursor/plugins|main|thermos"
 )
 

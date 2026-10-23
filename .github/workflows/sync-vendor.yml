@@ -1,6 +1,6 @@
 name: Sync vendored agent tools
 
-# Daily: sync ponytail, pstack and thermos from upstream and open (or update) one PR.
+# Daily: sync thermos from upstream and open (or update) one PR.
 # A maintainer reviews and merges; nothing reaches main without review.
 on:
   schedule:
