@@ -2,70 +2,16 @@
 
 Agent Engineering is a way to build software with coding agents without letting complexity grow faster than the project.
 
-Agent Engineering owns the project policy, constraints, authority, state, architecture, security boundaries, and repository setup. Its preferred execution workflow is [`pstack`](plugins/pstack/README.md), built around [`poteto-mode`](plugins/pstack/skills/poteto-mode/SKILL.md). The pstack workflow is documented as portable skills and playbooks, so you can use it through a plugin, skill loader, rules file, or another host integration. pstack runs inside the authority rules in [`AGENTS.md`](AGENTS.md#authority); where its autonomy text says external actions proceed without asking, `AGENTS.md` wins.
+Agent Engineering owns the project policy, constraints, authority, state, architecture, security boundaries, and repository setup. It works with any agent host: the operating files are plain Markdown and shell, and an agent follows them directly.
 
 ## Start here
-
-Use `poteto-mode` when you want an agent to investigate, design, build, verify, and ship a change with a clear workflow. In a host that supports slash commands, start with:
-
-```text
-/poteto-mode describe a small, real task here. Investigate first, then make and verify the change.
-```
-
-If you are new to the repository, install and configure pstack first.
-
-### Install pstack
-
-Install the pstack integration supported by your IDE or ADE. In Cursor, pstack is installed with:
-
-```text
-/add-plugin pstack
-```
-
-Then configure the models and reasoning budgets that pstack should use. In a host that supports slash commands, run:
-
-```text
-/setup-pstack
-```
-
-Read the [pstack setup guide](plugins/pstack/docs/guide/01-setup.md) for the setup choices and the optional project verification skill. If your host cannot install the plugin, load the pstack skills and playbooks from [`plugins/pstack`](plugins/pstack/) through the host's skill, rules, or instruction mechanism.
-
-### Run your first task
-
-Start a new agent session after setup. Describe a small, real task and invoke `poteto-mode`. In a host that supports slash commands, the invocation looks like this:
-
-```text
-/poteto-mode add a --json flag to this command. Keep text output byte-identical. Verify both.
-```
-
-`poteto-mode` stays active for the session when the host supports sticky modes. It matches the request to a playbook and runs the supporting skills as the task needs them. The [pstack guide](plugins/pstack/docs/guide/README.md) walks through a first task, prompting, verification, and longer runs.
-
-### Choose the right entry point
-
-Use these pstack entry points for the common cases. Invoke them through the syntax your IDE or ADE supports:
-
-- `poteto-mode` for any non-trivial task. It is the default entry point.
-- `setup-pstack` to choose models and reasoning budgets.
-- `how` to understand how a subsystem works.
-- `why` to investigate why a decision or piece of code exists.
-- `interrogate` to review a change from several critical perspectives.
-- `create-verification-skill` when the project has no reliable way to prove user-visible behavior.
-
-The [pstack README](plugins/pstack/README.md) lists every skill and playbook.
-
-## Bootstrap an agent in this repository
 
 If you are an agent working in this repository, follow this sequence before you modify files:
 
 1. Read this `README.md`.
 2. Read [`AGENTS.md`](AGENTS.md). Treat it as the repository's operating rules.
-3. Tell the user that pstack is the recommended workflow for this repository.
-4. If pstack is not installed in the user's IDE or ADE, tell the user how to install the pstack integration for that host. In Cursor, the command is `/add-plugin pstack`.
-5. Ask the user to run the host's equivalent of `setup-pstack` to choose the model roles and reasoning budget. In Cursor, the command is `/setup-pstack`.
-6. Ask the user to start a new agent session after setup if the host applies configuration only to new sessions.
-7. Use the host's equivalent of `poteto-mode` for the first non-trivial task. In Cursor, the command is `/poteto-mode`. Give the user a small, real example if they do not have a task ready.
-
-Do not claim that setup is complete until the user has installed pstack and completed the host's setup flow. Do not choose model slugs for the user. The setup flow must detect available models and validate the choices. Follow the repository rules in `AGENTS.md` for every later change.
+3. Pick the path below (NEW, ADOPT, UPDATE, or FEATURE) that matches the task.
+4. Run `make verify` before calling the work done.
 
 ## How Agent Engineering fits
 
@@ -75,9 +21,6 @@ Agent Engineering defines the environment in which work happens:
 - Authority defines what each agent may do.
 - State records goals, architecture, status, roles, verification, and security decisions.
 - Repository setup provides the files and checks that keep the project understandable.
-- pstack and `poteto-mode` provide the preferred execution workflow.
-
-The workflow is IDE- and ADE-agnostic. Cursor commands below are examples of one host integration. Another host can expose the same workflow through skills, rules, commands, or configuration. When a host has no command equivalent, apply the instructions in the linked `SKILL.md` and playbook files directly.
 
 ## NEW, ADOPT, UPDATE, and FEATURE
 
@@ -87,10 +30,6 @@ Agent Engineering has four paths for project work:
 - **ADOPT** adds the operating layer to an existing project without restructuring application code or replacing its README. It merges an existing `AGENTS.md`, adds a `Makefile` only when the project has none, and fails before copying if another control file conflicts.
 - **UPDATE** reconciles an already managed project with a newer operating layer. It is not a re-run of ADOPT.
 - **FEATURE** treats working product behavior as the initial bottleneck for a requested feature. Escalate to research, architecture, or security review only when the feature exposes a material reason.
-
-## Repository setup without pstack
-
-Use the repository setup directly when you need to create or adopt the operating files without the preferred pstack workflow. This path still produces the same Agent Engineering policy, authority, state, architecture, verification, and security structure.
 
 ## What it generates
 
@@ -183,13 +122,11 @@ OUTPUT_DIR=dist/internal-agent
 
 ## Included agent tools
 
-The repository also carries three opt-in upstream tools. They are repository assets and do not enter generated projects unless a maintainer integrates them explicitly.
+The repository also carries one opt-in upstream tool. It is a repository asset and does not enter generated projects unless a maintainer integrates it explicitly.
 
-- [`skills/ponytail`](skills/ponytail/): the standalone Ponytail skill from [`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail) (MIT), tracked at its latest release.
-- [`plugins/pstack`](plugins/pstack/): the complete pstack Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/pstack) (MIT), tracked at `main`.
 - [`plugins/thermos`](plugins/thermos/): the complete Thermos Cursor plugin from [`cursor/plugins`](https://github.com/cursor/plugins/tree/main/thermos) (MIT), tracked at `main`.
 
-[`tooling/vendor.lock`](tooling/vendor.lock) records the exact upstream commit of each. Every day, [`.github/workflows/sync-vendor.yml`](.github/workflows/sync-vendor.yml) runs [`tooling/sync-vendor.sh`](tooling/sync-vendor.sh) and `make verify`, then opens or updates one PR when upstream changed and starts CI on it (the required checks need a CI run). These files are agent instructions, so review the upstream diff before merging. To sync by hand, run `bash tooling/sync-vendor.sh`.
+[`tooling/vendor.lock`](tooling/vendor.lock) records its exact upstream commit. Every day, [`.github/workflows/sync-vendor.yml`](.github/workflows/sync-vendor.yml) runs [`tooling/sync-vendor.sh`](tooling/sync-vendor.sh) and `make verify`, then opens or updates one PR when upstream changed and starts CI on it (the required checks need a CI run). These files are agent instructions, so review the upstream diff before merging. To sync by hand, run `bash tooling/sync-vendor.sh`.
 
 ## Engineering model
 
@@ -217,7 +154,6 @@ The goal is not maximum process. Start with a secure minimum. Add infrastructure
 agent-engineering/
 ├── templates/core/          # canonical generated-project foundation
 ├── addons/                  # optional operating models and capabilities
-├── skills/                  # standalone upstream agent skills
 ├── plugins/                 # complete upstream agent plugin packages
 ├── standards/               # engineering doctrine
 ├── tooling/                 # safe validation + generation

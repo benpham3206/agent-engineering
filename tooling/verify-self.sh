@@ -9,7 +9,7 @@ git -C "$root" diff --check
 # GOAL, STATUS, ARCHITECTURE, AGENTS, and SECURITY hold this repository's own content.
 bash "$root/scripts/verify-repo.sh"
 
-# Vendored pstack grants autonomy for external actions; AGENTS.md must keep the rule that overrides it.
+# Vendored and host-loaded workflow tools may claim autonomy; AGENTS.md must keep the rule that overrides them.
 grep -q '^Workflow tools grant no authority\.' "$root/AGENTS.md" \
   || { printf 'authority drift: AGENTS.md lost the rule that vendored workflow tools grant no authority\n' >&2; exit 1; }
 drift=0
