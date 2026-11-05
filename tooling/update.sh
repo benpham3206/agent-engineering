@@ -81,8 +81,13 @@ git -C "$root" merge-base --is-ancestor "$baseline" HEAD \
 
 stage="$(mktemp -d)"
 n=0
+backup=''
+t=''
 cleanup() {
   local i=1
+  if [[ -n "$backup" && -e "$backup" && -n "$t" && ! -e "$t" && ! -L "$t" ]]; then
+    mv -n "$backup" "$t" || printf 'warning: original file remains at %s\n' "$backup" >&2
+  fi
   while [[ "$i" -le "$n" ]]; do rm -f "$stage/$i"; i=$((i + 1)); done
   rmdir "$stage" 2>/dev/null || printf 'warning: left temporary directory %s\n' "$stage" >&2
 }
@@ -121,11 +126,15 @@ paths="$f"
 { list_paths "$new_list"; list_paths "$old_list"; } | awk '!seen[$0]++' > "$paths"
 
 # Preflight: decide every action before writing anything.
-kinds=() targets=() sources=() modes=()
+kinds=() targets=() sources=() modes=() hashes=()
 conflicts=0 changes=0
 report() { printf '%s\n' "$1"; }
 conflict() { report "conflict $1: $2"; conflicts=$((conflicts + 1)); }
-plan() { kinds+=("$1"); targets+=("$2"); sources+=("$3"); modes+=("${4:-}"); changes=$((changes + 1)); report "$1 $2"; }
+plan() {
+  kinds+=("$1"); targets+=("$2"); sources+=("$3"); modes+=("${4:-}")
+  if [[ "$1" == replace ]]; then hashes+=("$(git -C "$root" hash-object "$target/$2")"); else hashes+=(missing); fi
+  changes=$((changes + 1)); report "$1 $2"
+}
 
 unsafe_location() {
   local path="$1" dir="$target" part rest="$1"
@@ -228,6 +237,13 @@ written=''
 sibling=''
 abort() {
   [[ -n "$sibling" ]] && rm -f "$sibling"
+  if [[ -n "$backup" && -e "$backup" && -n "$t" && ! -e "$t" && ! -L "$t" ]]; then
+    mv -n "$backup" "$t" || true
+  fi
+  if [[ -n "$backup" && -e "$backup" ]]; then
+    fail "update stopped at $1; local path is $t and the original file is preserved at $backup; already written:${written:- none}; manifest unchanged; re-run after fixing the cause"
+    exit 1
+  fi
   fail "update stopped at $1; already written:${written:- none}; manifest unchanged; re-run after fixing the cause"
   exit 1
 }
@@ -236,6 +252,7 @@ while [[ "$i" -lt "${#kinds[@]}" ]]; do
   path="${targets[$i]}"
   t="$target/$path"
   sibling="$t.ae-update.$$"
+  backup=''
   if [[ "${kinds[$i]}" == add ]]; then
     mkdir -p "$(dirname "$t")" || abort "$path"
     cat "${sources[$i]}" > "$sibling" || abort "$path"
@@ -243,9 +260,53 @@ while [[ "$i" -lt "${#kinds[@]}" ]]; do
   else
     cp -p "$t" "$sibling" || abort "$path"
     cat "${sources[$i]}" > "$sibling" || abort "$path"
+    backup_candidate="$t.local-$(date +%Y%m%d%H%M%S).$$"
+    [[ ! -e "$backup_candidate" && ! -L "$backup_candidate" ]] || abort "$path"
+    mv -n "$t" "$backup_candidate" || abort "$path"
+    if [[ -e "$t" || -L "$t" ]]; then abort "$path"; fi
+    if [[ -d "$backup_candidate" && ! -L "$backup_candidate" ]]; then
+      moved="$backup_candidate/${t##*/}"
+      if [[ -e "$moved" || -L "$moved" ]]; then backup="$moved"; else backup="$backup_candidate"; fi
+      abort "$path"
+    fi
+    [[ -f "$backup_candidate" && ! -L "$backup_candidate" ]] || abort "$path"
+    backup="$backup_candidate"
   fi
-  mv -f "$sibling" "$t" || abort "$path"
+  mv -n "$sibling" "$t" || abort "$path"
+  if [[ -e "$sibling" ]]; then
+    if [[ -n "$backup" ]]; then
+      backup_hash="$(git -C "$root" hash-object "$backup")" || abort "$path"
+      if [[ "$backup_hash" == "${hashes[$i]}" && -f "$t" && ! -L "$t" ]]; then
+        rm -f "$backup" || abort "$path"
+        backup=''
+      fi
+    fi
+    [[ -n "$sibling" ]] && rm -f "$sibling"
+    sibling=''
+    if [[ -n "$backup" ]]; then
+      fail "update stopped at $path; local edit remains at $t and the moved file is preserved at $backup; already written:${written:- none}; manifest unchanged; re-run after fixing the cause"
+    else
+      fail "update stopped at $path; local edit remains at $t; already written:${written:- none}; manifest unchanged; re-run after fixing the cause"
+    fi
+    exit 1
+  fi
+  if [[ -L "$t" || ! -f "$t" ]]; then
+    if [[ -d "$t" && ! -L "$t" ]]; then
+      staged_inside="$t/${sibling##*/}"
+      [[ -f "$staged_inside" && ! -L "$staged_inside" ]] && rm -f "$staged_inside" || abort "$path"
+    fi
+    abort "$path"
+  fi
   sibling=''
+  if [[ -n "$backup" ]]; then
+    backup_hash="$(git -C "$root" hash-object "$backup")" || abort "$path"
+    if [[ "$backup_hash" != "${hashes[$i]}" ]]; then
+      fail "update stopped at $path; the moved file changed after preflight and is preserved at $backup; already written:${written:- none}; manifest unchanged; re-run after fixing the cause"
+      exit 1
+    fi
+    rm -f "$backup" || abort "$path"
+    backup=''
+  fi
   written="$written $path"
   i=$((i + 1))
 done

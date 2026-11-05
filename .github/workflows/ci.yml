@@ -23,6 +23,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Verify template system
         shell: bash
         run: bash tooling/verify-self.sh

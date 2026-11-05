@@ -2,7 +2,8 @@
 set -euo pipefail
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 bash "$root/tests/generation/test-generate.sh"
-bash -n "$root"/tooling/*.sh "$root"/templates/core/scripts/*.sh "$root/tests/generation/test-generate.sh"
+bash "$root/tests/generation/test-update-race.sh"
+bash -n "$root"/tooling/*.sh "$root"/templates/core/scripts/*.sh "$root/tests/generation/test-generate.sh" "$root/tests/generation/test-update-race.sh"
 git -C "$root" diff --check
 
 # Dogfood: this repository passes the check it generates, and its generic backbone files match the templates.

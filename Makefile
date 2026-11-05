@@ -10,6 +10,7 @@ generate:
 
 test:
 	bash tests/generation/test-generate.sh
+	bash tests/generation/test-update-race.sh
 
 verify:
 	bash tooling/verify-self.sh
